@@ -1,0 +1,15 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Paranothing", "Paranothing\Paranothing.shproj", "{20CF7F1F-4EAC-482F-A2E0-0D3D8BC34C88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paranothing.Desktop", "Paranothing.Desktop\Paranothing.Desktop.csproj", "{D15F5C24-C4B9-46F6-B208-B2EBC7EFDA53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D15F5C24-C4B9-46F6-B208-B2EBC7EFDA53}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+	EndGlobalSection
+EndGlobal
