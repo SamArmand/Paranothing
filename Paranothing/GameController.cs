@@ -15,7 +15,7 @@ namespace Paranothing
 
         private List<Updatable> updatableObjs;
         private List<Drawable> drawableObjs;
-        private List<Collideable> collideableObjs;
+        private List<ICollideable> collideableObjs;
         public Boy player;
         public GameState state;
         public TimePeriod timePeriod;
@@ -45,7 +45,7 @@ namespace Paranothing
         {
             updatableObjs = new List<Updatable>();
             drawableObjs = new List<Drawable>();
-            collideableObjs = new List<Collideable>();
+            collideableObjs = new List<ICollideable>();
             levels = new Dictionary<string, Level>();
             state = GameState.Game;
             timePeriod = TimePeriod.Present;
@@ -98,7 +98,7 @@ namespace Paranothing
             showingDialogue = false;
             updatableObjs = new List<Updatable>();
             drawableObjs = new List<Drawable>();
-            collideableObjs = new List<Collideable>();
+            collideableObjs = new List<ICollideable>();
             player.reset();
             player.X = level.playerX;
             player.Y = level.playerY;
@@ -146,10 +146,10 @@ namespace Paranothing
             if (soundPos != null && soundPos.X != 0 && soundPos.Y != 0)
                 soundTriggered = true;
             else soundTriggered = false;
-            foreach (Collideable obj in collideableObjs)
+            foreach (ICollideable obj in collideableObjs)
             {
                 Boy.BoyState currState = player.state;
-                bool colliding = collides(((Collideable)obj).getBounds(), player.getBounds());
+                bool colliding = collides(((ICollideable)obj).GetBounds(), player.GetBounds());
                 if (obj is Shadows)
                 {
                     Shadows shadow = (Shadows)obj;
@@ -194,9 +194,9 @@ namespace Paranothing
                 {
                     Button button = (Button)obj;
                     bool pressed = false;
-                    foreach (Collideable c in collideableObjs)
+                    foreach (ICollideable c in collideableObjs)
                     {
-                        if ((c is Boy || (timePeriod == TimePeriod.Present && c is Shadows)) && collides(button.getBounds(), c.getBounds()))
+                        if ((c is Boy || (timePeriod == TimePeriod.Present && c is Shadows)) && collides(button.GetBounds(), c.GetBounds()))
                         {
                             pressed = true;
                             break;
@@ -209,14 +209,14 @@ namespace Paranothing
                 else if (obj is Stairs)
                 {
                     Stairs stair = (Stairs)obj;
-                    if (stair.isSolid())
+                    if (stair.IsSolid())
                     {
                         if (colliding)
                         {
                             if (player.X + 30 >= stair.X && player.X + 8 <= stair.X)
                             {
                                 if (((stair.direction == Direction.Left && player.Y + 58 == stair.getSmallBounds().Y)
-                                    || (stair.direction == Direction.Right && player.Y + 58 == stair.Y + stair.getBounds().Height))
+                                    || (stair.direction == Direction.Right && player.Y + 58 == stair.Y + stair.GetBounds().Height))
                                     && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
                                 {
                                     player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
@@ -224,10 +224,10 @@ namespace Paranothing
                                     player.actionBubble.show();
                                 }
                             }
-                            else if (player.X + 30 >= stair.X + stair.getBounds().Width && player.X + 8 <= stair.X + stair.getBounds().Width)
+                            else if (player.X + 30 >= stair.X + stair.GetBounds().Width && player.X + 8 <= stair.X + stair.GetBounds().Width)
                             {
                                 if (((stair.direction == Direction.Right && player.Y + 58 == stair.getSmallBounds().Y)
-                                    || (stair.direction == Direction.Left && player.Y + 58 == stair.Y + stair.getBounds().Height))
+                                    || (stair.direction == Direction.Left && player.Y + 58 == stair.Y + stair.GetBounds().Height))
                                     && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
                                 {
                                     player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
@@ -240,7 +240,7 @@ namespace Paranothing
                                 if (stair.direction == Direction.Left)
                                 {
                                     if ((player.direction == Direction.Left && (int)player.Y + 58 == stair.getSmallBounds().Y)
-                                        || (player.direction == Direction.Right && (int)player.Y + 58 == stair.Y + stair.getBounds().Height))
+                                        || (player.direction == Direction.Right && (int)player.Y + 58 == stair.Y + stair.GetBounds().Height))
                                     {
                                         player.state = Boy.BoyState.Walk;
                                     }
@@ -248,7 +248,7 @@ namespace Paranothing
                                 if (stair.direction == Direction.Right)
                                 {
                                     if ((player.direction == Direction.Right && (int)player.Y + 58 == stair.getSmallBounds().Y)
-                                        || (player.direction == Direction.Left && (int)player.Y + 58 == stair.Y + stair.getBounds().Height))
+                                        || (player.direction == Direction.Left && (int)player.Y + 58 == stair.Y + stair.GetBounds().Height))
                                     {
                                         player.state = Boy.BoyState.Walk;
                                     }
@@ -262,13 +262,13 @@ namespace Paranothing
                     Chairs chair = (Chairs)obj;
                     if (chair.state == Chairs.ChairsState.Falling)
                     {
-                        foreach (Collideable c in collideableObjs)
+                        foreach (ICollideable c in collideableObjs)
                         {
                             if (c is Floor)
                             {
-                                if (collides(c.getBounds(), chair.getBounds()))
+                                if (collides(c.GetBounds(), chair.GetBounds()))
                                 {
-                                    while (collides(c.getBounds(), chair.getBounds()))
+                                    while (collides(c.GetBounds(), chair.GetBounds()))
                                         chair.Y--;
                                     chair.state = Chairs.ChairsState.Idle;
                                     soundPos = new Vector2(chair.X, chair.Y);
@@ -286,11 +286,11 @@ namespace Paranothing
                 {
                     Wardrobe wardrobe = (Wardrobe)obj;
                     if (wardrobe.state == Wardrobe.WardrobeState.Opening)
-                        soundPos = new Vector2(wardrobe.X + wardrobe.getBounds().Width / 2, wardrobe.Y + wardrobe.getBounds().Height / 2);
+                        soundPos = new Vector2(wardrobe.X + wardrobe.GetBounds().Width / 2, wardrobe.Y + wardrobe.GetBounds().Height / 2);
                     if (colliding && player.X + (player.direction == Direction.Left ? 8 : 32) > wardrobe.X)
                     {
                         bool negated = false;
-                        if (collides(wardrobe.enterBox, player.getBounds()))
+                        if (collides(wardrobe.enterBox, player.GetBounds()))
                         {
                             Wardrobe linkedWR = wardrobe.getLinkedWR();
                             if (wardrobe.isLocked() || linkedWR == null
@@ -306,7 +306,7 @@ namespace Paranothing
                         }
                         else
                         {
-                            negated = collidingWithSolid(wardrobe.getBounds(), false);
+                            negated = collidingWithSolid(wardrobe.GetBounds(), false);
                             if (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk)
                             {
                                 player.actionBubble.setAction(ActionBubble.BubbleAction.Push, negated);
@@ -349,7 +349,7 @@ namespace Paranothing
                     if (player.state != Boy.BoyState.StairsLeft && player.state != Boy.BoyState.StairsRight)
                     {
                         Floor floor = (Floor)obj;
-                        while (collides(player.getBounds(), floor.getBounds()))
+                        while (collides(player.GetBounds(), floor.GetBounds()))
                         {
                             player.Y--;
                         }
@@ -362,8 +362,8 @@ namespace Paranothing
                     {
                         if (colliding && player.state == Boy.BoyState.Walk)
                         {
-                            if ((player.direction == Direction.Left && player.X > door.getBounds().X)
-                                || (player.direction == Direction.Right && player.X < door.getBounds().X))
+                            if ((player.direction == Direction.Left && player.X > door.GetBounds().X)
+                                || (player.direction == Direction.Right && player.X < door.GetBounds().X))
                                 player.state = Boy.BoyState.PushingStill;
                         }
                     }
@@ -372,18 +372,18 @@ namespace Paranothing
                 {
                     if (!player.actionBubble.isVisible() && !(player.interactor is Wardrobe && (player.state == Boy.BoyState.PushingStill || player.state == Boy.BoyState.PushWalk)))
                         player.interactor = null;
-                    Collideable collider = (Collideable)obj;
-                    if (colliding && player.state == Boy.BoyState.Walk && collider.isSolid())
+                    ICollideable collider = (ICollideable)obj;
+                    if (colliding && player.state == Boy.BoyState.Walk && collider.IsSolid())
                     {
-                        if ((player.direction == Direction.Left && player.X > collider.getBounds().X)
-                            || (player.direction == Direction.Right && player.X < collider.getBounds().X))
+                        if ((player.direction == Direction.Left && player.X > collider.GetBounds().X)
+                            || (player.direction == Direction.Right && player.X < collider.GetBounds().X))
                             player.state = Boy.BoyState.PushingStill;
                     }
                 }
             }
             if (soundTriggered)
                 soundPos = new Vector2();
-            if (!collides(player.getBounds(), new Rectangle(0, 0, level.Width, level.Height)))
+            if (!collides(player.GetBounds(), new Rectangle(0, 0, level.Width, level.Height)))
             {
                 if (nextLevel())
                 {
@@ -447,9 +447,9 @@ namespace Paranothing
             {
                 updatableObjs.Add((Updatable)obj);
             }
-            if (obj is Collideable)
+            if (obj is ICollideable)
             {
-                collideableObjs.Add((Collideable)obj);
+                collideableObjs.Add((ICollideable)obj);
             }
 
         }
@@ -461,13 +461,13 @@ namespace Paranothing
 
         public bool collidingWithSolid(Rectangle box, bool includePlayer)
         {
-            foreach (Collideable col in collideableObjs)
+            foreach (ICollideable col in collideableObjs)
             {
                 if (!includePlayer && col is Boy)
                     continue;
                 if (col is Stairs)
                     continue;
-                if (col.isSolid() && collides(box, col.getBounds()))
+                if (col.IsSolid() && collides(box, col.GetBounds()))
                 {
                     return true;
                 }

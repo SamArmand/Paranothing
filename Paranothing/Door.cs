@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Doors : Collideable, Updatable, Drawable, Interactive, Lockable, Saveable
+    class Doors : ICollideable, Updatable, Drawable, Interactive, Lockable, Saveable
     {
         # region Attributes
 
@@ -186,11 +186,11 @@ namespace Paranothing
         }
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
-        public bool isSolid()
+        public bool IsSolid()
         {
             return locked;
         }

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace Paranothing
 {
-    class Dialogue : Collideable, Updatable, Saveable
+    class Dialogue : ICollideable, Updatable, Saveable
     {
         private GameController control = GameController.getInstance();
         public bool played { get; private set; }
@@ -49,12 +49,12 @@ namespace Paranothing
             }
         }
 
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

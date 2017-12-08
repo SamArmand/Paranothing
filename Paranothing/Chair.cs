@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    public class Chairs : Collideable, Updatable, Drawable, Interactive, Saveable
+    public class Chairs : ICollideable, Updatable, Drawable, Interactive, Saveable
     {
         # region Attributes
 
@@ -151,11 +151,11 @@ namespace Paranothing
         }
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

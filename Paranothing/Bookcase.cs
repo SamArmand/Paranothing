@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Bookcases : Collideable, Updatable, Drawable, Interactive, Saveable
+    class Bookcases : ICollideable, Updatable, Drawable, Interactive, Saveable
     {
         # region Attributes
 
@@ -148,11 +148,11 @@ namespace Paranothing
         # region Methods
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

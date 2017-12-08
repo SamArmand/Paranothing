@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class DoorKeys : Drawable, Collideable, Saveable, Interactive
+    class DoorKeys : Drawable, ICollideable, Saveable, Interactive
     {
         # region Attributes
         private static Dictionary<string, DoorKeys> keyDict = new Dictionary<string, DoorKeys>();
@@ -103,12 +103,12 @@ namespace Paranothing
         public int Y { get { return (int)position.Y; } set { position.Y = value; } }
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

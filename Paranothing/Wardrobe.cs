@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Wardrobe : Collideable, Updatable, Drawable, Interactive, Lockable, Saveable
+    class Wardrobe : ICollideable, Updatable, Drawable, Interactive, Lockable, Saveable
     {
         # region Attributes
         private static Dictionary<string, Wardrobe> wardrobeDict = new Dictionary<string, Wardrobe>();
@@ -276,11 +276,11 @@ namespace Paranothing
         # region Methods
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return pushBox;
         }
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }
@@ -380,7 +380,7 @@ namespace Paranothing
         public void Interact()
         {
             Boy player = control.player;
-            if (Rectangle.Intersect(player.getBounds(), enterBox).Width != 0)
+            if (Rectangle.Intersect(player.GetBounds(), enterBox).Width != 0)
             {
                 Wardrobe linkedWR = getLinkedWR();
                 if (!locked && linkedWR != null && !linkedWR.isLocked() && !control.collidingWithSolid(linkedWR.enterBox))

@@ -2,9 +2,9 @@
 
 namespace Paranothing
 {
-    interface Collideable
+    internal interface ICollideable
     {
-        Rectangle getBounds();
-        bool isSolid();
+        Rectangle GetBounds();
+        bool IsSolid();
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Shadows : Collideable, Updatable, Drawable, Saveable
+    class Shadows : ICollideable, Updatable, Drawable, Saveable
     {
         # region Attributes
         private GameController control = GameController.getInstance();
@@ -199,7 +199,7 @@ namespace Paranothing
                             distMoved = 0;
                         }
                     }
-                    if (control.collidingWithSolid(getBounds(), false))
+                    if (control.collidingWithSolid(GetBounds(), false))
                     {
                         if (state == ShadowState.SeekSound)
                         {
@@ -260,12 +260,12 @@ namespace Paranothing
         }
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

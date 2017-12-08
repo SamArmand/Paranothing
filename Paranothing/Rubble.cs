@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Rubble : Collideable, Drawable, Saveable
+    class Rubble : ICollideable, Drawable, Saveable
     {
         # region Attributes
         private GameController control = GameController.getInstance();
@@ -61,12 +61,12 @@ namespace Paranothing
         private Rectangle bounds { get { return new Rectangle(X, Y, 37, 28); }}
 
         //Collideable
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return bounds;
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             if (control.timePeriod == TimePeriod.Present)
                 return true;

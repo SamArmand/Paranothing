@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Stairs : Drawable, Collideable, Updatable, Interactive, Saveable
+    class Stairs : Drawable, ICollideable, Updatable, Interactive, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -103,12 +103,12 @@ namespace Paranothing
             renderer.Draw(sheet.image, position, sprite, tint, 0f, new Vector2(), 1f, flip, DrawLayer.Stairs);
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return intact;
         }
 
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return new Rectangle((int)position.X, (int)position.Y, 146, 112);
         }
@@ -130,7 +130,7 @@ namespace Paranothing
                 player.direction = Direction.Right;
                 player.X = X - 14;
             }
-            else if (player.X + 30 >= X + getBounds().Width && player.X + 8 <= X + getBounds().Width)
+            else if (player.X + 30 >= X + GetBounds().Width && player.X + 8 <= X + GetBounds().Width)
             {
                 player.direction = Direction.Left;
                 player.X = X + getSmallBounds().Width;

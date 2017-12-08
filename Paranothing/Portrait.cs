@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Portrait : Drawable, Collideable, Interactive, Saveable
+    class Portrait : Drawable, ICollideable, Interactive, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -108,12 +108,12 @@ namespace Paranothing
             }
         }
 
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return new Rectangle(X, Y, 35, 30); 
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return false;
         }

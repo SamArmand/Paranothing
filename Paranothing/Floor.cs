@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Floor : Drawable, Collideable, Saveable
+    class Floor : Drawable, ICollideable, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -66,12 +66,12 @@ namespace Paranothing
 
         public void reset() { }
 
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return Box;
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return true;
         }

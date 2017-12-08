@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Paranothing
 {
-    class Boy : Drawable, Updatable, Collideable
+    class Boy : Drawable, Updatable, ICollideable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -294,7 +294,7 @@ namespace Paranothing
                         Wardrobe targetWR = ((Wardrobe)interactor).getLinkedWR();
                         if (targetWR != null)
                         {
-                            Rectangle target = targetWR.getBounds();
+                            Rectangle target = targetWR.GetBounds();
                             teleportTo = new Vector2(target.X + 16, target.Y + 24);
                             interactor = null;
                         }
@@ -398,12 +398,12 @@ namespace Paranothing
             }
         }
 
-        public Rectangle getBounds()
+        public Rectangle GetBounds()
         {
             return new Rectangle((int)(position.X), (int)(position.Y), Width, Height);
         }
 
-        public bool isSolid()
+        public bool IsSolid()
         {
             return true;
         }
