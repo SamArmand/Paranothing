@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Rubble : ICollideable, Drawable, Saveable
+    class Rubble : ICollideable, IDrawable, Saveable
     {
         # region Attributes
         private GameController control = GameController.getInstance();
@@ -79,7 +79,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (control.timePeriod == TimePeriod.Present)
                 renderer.Draw(sheet.image, bounds, sheet.getSprite(0), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Rubble);

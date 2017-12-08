@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class ActionBubble : Drawable//, Updatable
+    class ActionBubble : IDrawable
     {
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
         public enum BubbleAction { None, Wardrobe, Push, Portrait, OldPortrait, Stair, Chair, Bookcase };
@@ -101,7 +101,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (visible)
             {

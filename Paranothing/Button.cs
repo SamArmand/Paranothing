@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Button : Drawable, ICollideable, Saveable, Interactive
+    class Button : IDrawable, ICollideable, Saveable, IInteractable
     {
         # region Attributes
 
@@ -96,7 +96,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (stepOn)
                 renderer.Draw(sheet.image, bounds, sheet.getSprite(1), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Key);

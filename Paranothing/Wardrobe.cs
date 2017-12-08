@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Wardrobe : ICollideable, Updatable, Drawable, Interactive, Lockable, Saveable
+    class Wardrobe : ICollideable, Updatable, IDrawable, IInteractable, Lockable, Saveable
     {
         # region Attributes
         private static Dictionary<string, Wardrobe> wardrobeDict = new Dictionary<string, Wardrobe>();
@@ -291,7 +291,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             Rectangle sprite = sheet.getSprite(animFrames.ElementAt(frame));
             renderer.Draw(sheet.image, new Vector2(X, Y), sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Wardrobe);            

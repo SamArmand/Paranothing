@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    public class Chairs : ICollideable, Updatable, Drawable, Interactive, Saveable
+    public class Chairs : ICollideable, Updatable, IDrawable, IInteractable, Saveable
     {
         # region Attributes
 
@@ -166,14 +166,14 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             Vector2 drawPos = new Vector2(X, Y);
             if (control.timePeriod == TimePeriod.Present)
                 renderer.Draw(sheet.image, drawPos, sheet.getSprite(1), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Chairs);
             else
                 renderer.Draw(sheet.image, drawPos, sheet.getSprite(0), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Chairs);
-            bubble.draw(renderer, tint);
+            bubble.Draw(renderer, tint);
         }
 
         //Updatable

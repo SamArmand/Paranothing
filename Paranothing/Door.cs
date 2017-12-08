@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Doors : ICollideable, Updatable, Drawable, Interactive, Lockable, Saveable
+    class Doors : ICollideable, Updatable, IDrawable, IInteractable, Lockable, Saveable
     {
         # region Attributes
 
@@ -201,7 +201,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             Rectangle sprite = sheet.getSprite(animFrames.ElementAt(frame));
             renderer.Draw(sheet.image, position, sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);

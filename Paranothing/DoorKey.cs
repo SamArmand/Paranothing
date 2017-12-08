@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class DoorKeys : Drawable, ICollideable, Saveable, Interactive
+    class DoorKeys : IDrawable, ICollideable, Saveable, IInteractable
     {
         # region Attributes
         private static Dictionary<string, DoorKeys> keyDict = new Dictionary<string, DoorKeys>();
@@ -119,7 +119,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (!pickedUp)
             {

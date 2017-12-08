@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Wall : Drawable, ICollideable, Updatable, Saveable
+    class Wall : IDrawable, ICollideable, Updatable, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -107,7 +107,7 @@ namespace Paranothing
             else
                 intact = startIntact;
         }
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (control.timePeriod == TimePeriod.Present || control.timePeriod == TimePeriod.FarPast)
                 if (!intact)

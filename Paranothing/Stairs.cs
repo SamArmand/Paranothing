@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Stairs : Drawable, ICollideable, Updatable, Interactive, Saveable
+    class Stairs : IDrawable, ICollideable, Updatable, IInteractable, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -90,7 +90,7 @@ namespace Paranothing
             Boy player = control.player;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             SpriteEffects flip = SpriteEffects.None;
             if (direction == Direction.Left)

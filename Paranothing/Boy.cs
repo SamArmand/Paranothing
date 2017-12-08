@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Paranothing
 {
-    class Boy : Drawable, Updatable, ICollideable
+    class Boy : IDrawable, Updatable, ICollideable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -49,7 +49,7 @@ namespace Paranothing
         private Vector2 teleportTo;
         private TimePeriod timeTravelTo;
         public Chairs nearestChair;
-        public Interactive interactor;
+        public IInteractable interactor;
 
         public Boy(float X, float Y, ActionBubble actionBubble)
         {
@@ -92,7 +92,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             SpriteEffects flip = SpriteEffects.None;
             if (direction == Direction.Left)

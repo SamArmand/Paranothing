@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Portrait : Drawable, ICollideable, Interactive, Saveable
+    class Portrait : IDrawable, ICollideable, IInteractable, Saveable
     {
         private GameController control = GameController.getInstance();
         private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
@@ -97,7 +97,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if ((!wasMoved || control.timePeriod == inTime) && !(control.timePeriod == TimePeriod.FarPast && sendTime != TimePeriod.FarPast))
             {

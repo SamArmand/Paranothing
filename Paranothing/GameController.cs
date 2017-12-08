@@ -14,7 +14,7 @@ namespace Paranothing
         public GamePadState padState;
 
         private List<Updatable> updatableObjs;
-        private List<Drawable> drawableObjs;
+        private List<IDrawable> drawableObjs;
         private List<ICollideable> collideableObjs;
         public Boy player;
         public GameState state;
@@ -44,7 +44,7 @@ namespace Paranothing
         protected GameController()
         {
             updatableObjs = new List<Updatable>();
-            drawableObjs = new List<Drawable>();
+            drawableObjs = new List<IDrawable>();
             collideableObjs = new List<ICollideable>();
             levels = new Dictionary<string, Level>();
             state = GameState.Game;
@@ -97,7 +97,7 @@ namespace Paranothing
         {
             showingDialogue = false;
             updatableObjs = new List<Updatable>();
-            drawableObjs = new List<Drawable>();
+            drawableObjs = new List<IDrawable>();
             collideableObjs = new List<ICollideable>();
             player.reset();
             player.X = level.playerX;
@@ -220,7 +220,7 @@ namespace Paranothing
                                     && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
                                 {
                                     player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
-                                    player.interactor = (Interactive)obj;
+                                    player.interactor = (IInteractable)obj;
                                     player.actionBubble.show();
                                 }
                             }
@@ -231,7 +231,7 @@ namespace Paranothing
                                     && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
                                 {
                                     player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
-                                    player.interactor = (Interactive)obj;
+                                    player.interactor = (IInteractable)obj;
                                     player.actionBubble.show();
                                 }
                             }
@@ -301,7 +301,7 @@ namespace Paranothing
                                 player.actionBubble.setAction(ActionBubble.BubbleAction.Wardrobe, negated);
                                 player.actionBubble.show();
                                 if (!negated)
-                                    player.interactor = (Interactive)obj;
+                                    player.interactor = (IInteractable)obj;
                             }
                         }
                         else
@@ -312,7 +312,7 @@ namespace Paranothing
                                 player.actionBubble.setAction(ActionBubble.BubbleAction.Push, negated);
                                 player.actionBubble.show();
                                 if (!negated)
-                                    player.interactor = (Interactive)obj;
+                                    player.interactor = (IInteractable)obj;
                             }
                         }
                     }
@@ -324,7 +324,7 @@ namespace Paranothing
                     {
                         player.actionBubble.setAction(ActionBubble.BubbleAction.Bookcase, false);
                         player.actionBubble.show();
-                        player.interactor = (Interactive)obj;
+                        player.interactor = (IInteractable)obj;
                     }
                 }
                 else if (obj is Portrait)
@@ -340,7 +340,7 @@ namespace Paranothing
                             else
                                 player.actionBubble.setAction(ActionBubble.BubbleAction.Portrait, negated);
                             player.actionBubble.show();
-                            player.interactor = (Interactive)obj;
+                            player.interactor = (IInteractable)obj;
                         }
                     }
                 }
@@ -422,12 +422,12 @@ namespace Paranothing
                 tint = Color.White;
                 tint.A = 4;
             }
-            foreach (Drawable obj in drawableObjs)
+            foreach (IDrawable obj in drawableObjs)
             {
-                obj.draw(renderer, tint);
+                obj.Draw(renderer, tint);
             }
 
-            player.draw(renderer, tint);
+            player.Draw(renderer, tint);
 
         }
 
@@ -439,9 +439,9 @@ namespace Paranothing
 
         public void addObject(Object obj)
         {
-            if (obj is Drawable)
+            if (obj is IDrawable)
             {
-                drawableObjs.Add((Drawable)obj);
+                drawableObjs.Add((IDrawable)obj);
             }
             if (obj is Updatable)
             {

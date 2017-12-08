@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Shadows : ICollideable, Updatable, Drawable, Saveable
+    class Shadows : ICollideable, Updatable, IDrawable, Saveable
     {
         # region Attributes
         private GameController control = GameController.getInstance();
@@ -247,7 +247,7 @@ namespace Paranothing
             return sheet.image;
         }
 
-        public void draw(SpriteBatch renderer, Color tint)
+        public void Draw(SpriteBatch renderer, Color tint)
         {
             if (control.timePeriod == TimePeriod.Present)
             {
