@@ -3,55 +3,54 @@ using Microsoft.Xna.Framework;
 
 namespace Paranothing
 {
-    class Dialogue : ICollideable, Updatable, Saveable
+    internal sealed class Dialogue : ICollideable, IUpdatable, ISaveable
     {
-        private GameController control = GameController.getInstance();
-        public bool played { get; private set; }
-        public string text;
-        private Vector2 position;
-        public int X { get { return (int)position.X; } set { position.X = value; } }
-        public int Y { get { return (int)position.Y; } set { position.Y = value; } }
-        private Rectangle bounds { get {return new Rectangle(X, Y, 20, 20);}}
-        public Dialogue(string text, int X, int Y)
+        private readonly GameController _control = GameController.GetInstance();
+        private bool Played { get; set; }
+        private readonly string _text;
+        private Vector2 _position;
+
+        private int X
         {
-            position = new Vector2(X, Y);
-            this.text = text;
-            played = false;
+            get => (int)_position.X;
+            set => _position.X = value;
         }
+        private int Y
+        {
+            get => (int)_position.Y;
+            set => _position.Y = value;
+        }
+        private Rectangle Bounds => new Rectangle(X, Y, 20, 20);
 
         public Dialogue(string saveString)
         {
             X = 0;
             Y = 0;
-            text = "...";
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndDialogue") && lineNum < lines.Length)
+            _text = "...";
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndDialogue", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { Y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("text:"))
-                {
-                    try { text = line.Substring(5).Trim(); }
-                    catch (FormatException) { }
-                }
-                lineNum++;
+
+                if (!line.StartsWith("text:", StringComparison.Ordinal)) continue;
+
+                try { _text = line.Substring(5).Trim(); }
+                catch (FormatException) { }
             }
         }
 
         public Rectangle GetBounds()
         {
-            return bounds;
+            return Bounds;
         }
 
         public bool IsSolid()
@@ -61,23 +60,17 @@ namespace Paranothing
 
         public void Play()
         {
-            if (!played)
-            {
-                control.showDialogue(text);
-                played = true;
-            }
+            if (Played) return;
+
+            _control.ShowDialogue(_text);
+            Played = true;
         }
 
-        public void update(GameTime time) {}
+        public void Update(GameTime time) {}
 
-        public string saveData()
+        public void Reset()
         {
-            return "StartDialogue\nx:" + X + "\ny:" + Y + "text:" + text + "EndDialogue";
-        }
-
-        public void reset()
-        {
-            played = false;
+            Played = false;
         }
     }
 }

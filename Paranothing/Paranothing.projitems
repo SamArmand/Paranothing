@@ -36,7 +36,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Floor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bookcase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Door.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ILockable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rubble.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wall.cs" />
   </ItemGroup>

@@ -4,142 +4,102 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Stairs : IDrawable, ICollideable, Updatable, IInteractable, Saveable
+    internal sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable, ISaveable
     {
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private SpriteSheet sheet;
-        public Vector2 position;
-        public int X { get { return (int)position.X; } set { position.X = value; } }
-        public int Y { get { return (int)position.Y; } set { position.Y = value; } }
-        private bool startIntact;
-        private bool intact;
-        public Direction direction;
-        public Texture2D getImage()
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SpriteSheet _sheet;
+        private Vector2 _position;
+        public int X
         {
-            return sheet.image;
+            get => (int)_position.X;
+            private set => _position.X = value;
         }
-
-        public Stairs(float X, float Y, Direction direction)
+        public int Y
         {
-            this.sheet = sheetMan.getSheet("stair");
-            position = new Vector2(X, Y);
-            intact = true;
-            this.direction = direction;
-            this.startIntact = true;
+            get => (int)_position.Y;
+            private set => _position.Y = value;
         }
-
-        public Stairs(float X, float Y, Direction direction, bool startIntact)
-        {
-            this.sheet = sheetMan.getSheet("stair");
-            position = new Vector2(X, Y);
-            intact = true;
-            this.direction = direction;
-            this.startIntact = startIntact;
-        }
+        private readonly bool _startIntact;
+        private bool _intact;
+        public readonly Direction Direction;
 
         public Stairs(string saveString)
         {
-            this.sheet = sheetMan.getSheet("stair");
+            _sheet = _sheetMan.GetSheet("stair");
             X = 0;
             Y = 0;
-            direction = Direction.Left;
-            intact = true;
-            startIntact = true;
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndStair") && lineNum < lines.Length)
+            Direction = Direction.Left;
+            _intact = true;
+            _startIntact = true;
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndStair", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { Y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("direction:"))
+
+                if (line.StartsWith("direction:", StringComparison.Ordinal))
                 {
-                    string dir = line.Substring(10).Trim();
-                    if (dir == "Right")
-                        direction = Direction.Right;
-                    else
-                        direction = Direction.Left;
+                    var dir = line.Substring(10).Trim();
+                    Direction = dir == "Right" ? Direction.Right : Direction.Left;
                 }
-                if (line.StartsWith("intact:"))
-                {
-                    try { startIntact = bool.Parse(line.Substring(7)); }
-                    catch (FormatException) { }
-                }
-                lineNum++;
+
+                if (!line.StartsWith("intact:", StringComparison.Ordinal)) continue;
+
+                try { _startIntact = bool.Parse(line.Substring(7)); }
+                catch (FormatException) { }
             }
         }
 
-        public void reset() { }
+        public void Reset() { }
 
-        public void update(GameTime time)
+        public void Update(GameTime time)
         {
-            if (control.timePeriod == TimePeriod.Past)
-                intact = true;
-            else
-                intact = startIntact;
-            Boy player = control.player;
+            _intact = _control.TimePeriod == TimePeriod.Past || _startIntact;
         }
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            SpriteEffects flip = SpriteEffects.None;
-            if (direction == Direction.Left)
-                flip = SpriteEffects.FlipHorizontally;
-            Rectangle sprite;
-            if (intact)
-                sprite = sheet.getSprite(0);
-            else
-                sprite = sheet.getSprite(1);
-            renderer.Draw(sheet.image, position, sprite, tint, 0f, new Vector2(), 1f, flip, DrawLayer.Stairs);
+            renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_intact ? 0 : 1), tint, 0f, new Vector2(), 1f, Direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, DrawLayer.Stairs);
         }
 
         public bool IsSolid()
         {
-            return intact;
+            return _intact;
         }
 
         public Rectangle GetBounds()
         {
-            return new Rectangle((int)position.X, (int)position.Y, 146, 112);
+            return new Rectangle((int)_position.X, (int)_position.Y, 146, 112);
         }
 
-        public Rectangle getSmallBounds()
+        public Rectangle GetSmallBounds()
         {
-            return new Rectangle((int)position.X + (direction == Direction.Left ? 0 : 24), (int)position.Y + 22, 122, 190);
+            return new Rectangle((int)_position.X + (Direction == Direction.Left ? 0 : 24), (int)_position.Y + 22, 122, 190);
         }
 
         public void Interact()
         {
-            Boy player = control.player;
-            if (direction == Direction.Left)
-                player.state = Boy.BoyState.StairsLeft;
-            else
-                player.state = Boy.BoyState.StairsRight;
+            var player = _control.Player;
+            player.State = Direction == Direction.Left ? Boy.BoyState.StairsLeft : Boy.BoyState.StairsRight;
             if (player.X + 30 >= X && player.X + 8 <= X)
             {
-                player.direction = Direction.Right;
+                player.Direction = Direction.Right;
                 player.X = X - 14;
             }
             else if (player.X + 30 >= X + GetBounds().Width && player.X + 8 <= X + GetBounds().Width)
             {
-                player.direction = Direction.Left;
-                player.X = X + getSmallBounds().Width;
+                player.Direction = Direction.Left;
+                player.X = X + GetSmallBounds().Width;
             }
-        }
-
-        public string saveData()
-        {
-            return "StartStair\nx:" + X + "\ny:" + Y + "\ndirection:" + direction + "\nintact:" + (startIntact ? "true" : "false") + "\nEndStair";
         }
     }
 }

@@ -7,400 +7,393 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Paranothing
 {
-    class Boy : IDrawable, Updatable, ICollideable
+    internal sealed class Boy : IDrawable, IUpdatable, ICollideable
     {
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private SoundManager soundMan = SoundManager.getInstance();
-        private SpriteSheet sheet;
-        private int pushSoundTimer = 0;
-        private int frame;
-        private int frameLength;
-        private int frameTime;
-        private string animName;
-        private List<int> animFrames;
-        public string Animation
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        private readonly SpriteSheet _sheet;
+        private int _pushSoundTimer;
+        private int _frame;
+        private int _frameLength;
+        private int _frameTime;
+        private string _animName;
+        private List<int> _animFrames;
+
+        private string Animation
         {
-            get { return animName; }
+            get => _animName;
             set
             {
-               
-                if (sheet.hasAnimation(value) && animName != value)
-                {
-                    animName = value;
-                    animFrames = sheet.getAnimation(animName);
-                    frame = 0;
-                    frameTime = 0;
-                }
+                if (!_sheet.HasAnimation(value) || _animName == value) return;
+
+                _animName = value;
+                _animFrames = _sheet.GetAnimation(_animName);
+                _frame = 0;
+                _frameTime = 0;
             }
         }
-        public float drawLayer;
-        private float moveSpeedX, moveSpeedY; // Pixels per animation frame
-        private Vector2 position;
-        public int Width, Height;
 
-        public float X { get { return position.X; } set { position.X = value; } }
-        public float Y { get { return position.Y; } set { position.Y = value; } }
+        private float _drawLayer;
+        private float _moveSpeedX, _moveSpeedY; // Pixels per animation frame
+        private Vector2 _position;
+        public int Width;
+        private int _height;
+
+        public float X
+        {
+            get => _position.X;
+            set => _position.X = value;
+        }
+        public float Y
+        {
+            get => _position.Y;
+            set => _position.Y = value;
+        }
 
         public enum BoyState { Idle, Walk, StairsLeft, StairsRight, PushWalk, PushingStill, Teleport, TimeTravel, ControllingChair, Die }
-        public BoyState state;
-        public Direction direction;
-        public ActionBubble actionBubble;
-        private Vector2 teleportTo;
-        private TimePeriod timeTravelTo;
-        public Chairs nearestChair;
-        public IInteractable interactor;
+        public BoyState State;
+        public Direction Direction;
+        public readonly ActionBubble ActionBubble;
+        private Vector2 _teleportTo;
+        private TimePeriod _timeTravelTo;
+        public Chair NearestChair;
+        public IInteractable Interactor;
 
-        public Boy(float X, float Y, ActionBubble actionBubble)
+        public Boy(float x, float y, ActionBubble actionBubble)
         {
-            this.sheet = sheetMan.getSheet("boy");
-            frame = 0;
-            frameTime = 0;
-            frameLength = 60;
-            position = new Vector2(X, Y);
+            _sheet = _sheetMan.GetSheet("boy");
+            _frame = 0;
+            _frameTime = 0;
+            _frameLength = 60;
+            _position = new Vector2(x, y);
             Width = 38;
-            Height = 58;
-            state = BoyState.Idle;
+            _height = 58;
+            State = BoyState.Idle;
             Animation = "stand";
-            direction = Direction.Right;
-            this.actionBubble = actionBubble;
+            Direction = Direction.Right;
+            ActionBubble = actionBubble;
             actionBubble.Player = this;
-            actionBubble.show();
-            teleportTo = new Vector2();
-            drawLayer = DrawLayer.Player;
+            actionBubble.Show();
+            _teleportTo = new Vector2();
+            _drawLayer = DrawLayer.Player;
         }
 
-        public void reset()
+        public void Reset()
         {
-            frame = 0;
-            frameTime = 0;
-            frameLength = 60;
-            position = new Vector2(X, Y);
+            _frame = 0;
+            _frameTime = 0;
+            _frameLength = 60;
+            _position = new Vector2(X, Y);
             Width = 38;
-            Height = 58;
-            state = BoyState.Idle;
+            _height = 58;
+            State = BoyState.Idle;
             Animation = "stand";
-            direction = Direction.Right;
-            actionBubble.Player = this;
-            actionBubble.show();
-            teleportTo = new Vector2();
-            nearestChair = null;
-        }
-
-        public Texture2D getImage()
-        {
-            return sheet.image;
+            Direction = Direction.Right;
+            ActionBubble.Player = this;
+            ActionBubble.Show();
+            _teleportTo = new Vector2();
+            NearestChair = null;
         }
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            SpriteEffects flip = SpriteEffects.None;
-            if (direction == Direction.Left)
-                flip = SpriteEffects.FlipHorizontally;
-            Rectangle sprite = sheet.getSprite(animFrames.ElementAt(frame));
-            renderer.Draw(sheet.image, position, sprite, tint, 0f, new Vector2(), 1f, flip, drawLayer);
+            renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_animFrames.ElementAt(_frame)), tint, 0f, new Vector2(), 1f, Direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, _drawLayer);
         }
 
-        private void checkInput(GameController control)
+        private void CheckInput(GameController control)
         {
-            if (state != BoyState.Die)
+            if (State == BoyState.Die) return;
+
+            if (control.KeyState.IsKeyDown(Keys.Space) || control.PadState.IsButtonDown(Buttons.A) &&
+                ((State == BoyState.Walk || State == BoyState.Idle) && control.KeyState.IsKeyUp(Keys.Right) && control.KeyState.IsKeyUp(Keys.Left)
+                    && control.PadState.IsButtonUp(Buttons.LeftThumbstickRight) && control.PadState.IsButtonUp(Buttons.LeftThumbstickLeft) || State == BoyState.PushWalk))
+                    Interactor?.Interact();
+
+            else if ((State == BoyState.PushingStill || State == BoyState.PushWalk) && Interactor != null)
+                State = BoyState.Idle;
+
+            if (control.KeyState.IsKeyDown(Keys.LeftShift) || control.PadState.IsButtonDown(Buttons.RightTrigger) && NearestChair != null)
             {
-                if ((control.keyState.IsKeyDown(Keys.Space) || control.padState.IsButtonDown(Buttons.A)))
-                {
-                    if ((((state == BoyState.Walk || state == BoyState.Idle) && control.keyState.IsKeyUp(Keys.Right) && control.keyState.IsKeyUp(Keys.Left)
-                    && control.padState.IsButtonUp(Buttons.LeftThumbstickRight) && control.padState.IsButtonUp(Buttons.LeftThumbstickLeft)) || state == BoyState.PushWalk) && null != interactor)
+                State = BoyState.ControllingChair;
+                NearestChair.State = Chair.ChairsState.Moving;
+            }
+            else if (NearestChair != null && NearestChair.State == Chair.ChairsState.Moving)
+            {
+                NearestChair.State = Chair.ChairsState.Falling;
+                State = BoyState.Idle;
+            }
+            if (control.KeyState.IsKeyUp(Keys.Left) && control.KeyState.IsKeyUp(Keys.Right)
+                                                    && control.PadState.IsButtonUp(Buttons.LeftThumbstickLeft) && control.PadState.IsButtonUp(Buttons.LeftThumbstickRight)
+                                                    && State != BoyState.Teleport && State != BoyState.TimeTravel)
+            {
+                if (State != BoyState.ControllingChair)
+                    if (Direction == Direction.Right)
                     {
-                        interactor.Interact();
+                        if (State != BoyState.StairsRight && State != BoyState.StairsLeft)
+                            if ((State == BoyState.PushWalk || State == BoyState.PushingStill) && Interactor != null)
+                                State = BoyState.PushingStill;
+                            else
+                                State = BoyState.Idle;
                     }
+                    else if (State != BoyState.StairsRight && State != BoyState.StairsLeft)
+                    {
+                            if ((State == BoyState.PushWalk || State == BoyState.PushingStill) && Interactor != null)
+                                State = BoyState.PushingStill;
+                            else
+                                State = BoyState.Idle;
+                    }
+            }
+            else
+            {
+                if (State != BoyState.ControllingChair)
+                    if (control.KeyState.IsKeyDown(Keys.Right) || control.PadState.IsButtonDown(Buttons.LeftThumbstickRight))
+                    {
+                        if ((State != BoyState.PushWalk && State != BoyState.PushingStill) || (Interactor != null && ((Wardrobe)Interactor).X > X))
+                            Direction = Direction.Right;
+                        if (State == BoyState.Idle)
+                            State = BoyState.Walk;
+                        if (Interactor != null && State == BoyState.PushingStill && Direction == Direction.Right)
+                            State = BoyState.PushWalk;
+                    }
+                    else if (control.KeyState.IsKeyDown(Keys.Left) || control.PadState.IsButtonDown(Buttons.LeftThumbstickLeft))
+                    {
+                        if (State != BoyState.PushWalk && State != BoyState.PushingStill || Interactor != null && ((Wardrobe)Interactor).X < X)
+                            Direction = Direction.Left;
+                        if (State == BoyState.Idle)
+                            State = BoyState.Walk;
+                        if (Interactor != null && State == BoyState.PushingStill && Direction == Direction.Left)
+                            State = BoyState.PushWalk;
+                    }
+            }
 
+            if (State != BoyState.ControllingChair) return;
 
-                }
-                else if ((state == BoyState.PushingStill ||state == BoyState.PushWalk) && interactor != null)
-                {
-                    state = BoyState.Idle;
-                }
-                if (control.keyState.IsKeyDown(Keys.LeftControl) || control.padState.IsButtonDown(Buttons.RightTrigger))                {
-                    if (nearestChair != null)
-                    {
-                        state = BoyState.ControllingChair;
-                        nearestChair.state = Chairs.ChairsState.Moving;
-                    }
-                }
-                else
-                {
-                    if (nearestChair != null && nearestChair.state == Chairs.ChairsState.Moving)
-                    {
-                        nearestChair.state = Chairs.ChairsState.Falling;
-                        state = BoyState.Idle;
-                    }
-                }
-                if (control.keyState.IsKeyUp(Keys.Left) && control.keyState.IsKeyUp(Keys.Right)
-                    && control.padState.IsButtonUp(Buttons.LeftThumbstickLeft) && control.padState.IsButtonUp(Buttons.LeftThumbstickRight)
-                    && state != BoyState.Teleport && state != BoyState.TimeTravel)
-                {
-                    if (state != BoyState.ControllingChair)
-                    {
-                        if (direction == Direction.Right)
-                        {
-                            if (state != BoyState.StairsRight && state != BoyState.StairsLeft)
-                            {
-                                if ((state == BoyState.PushWalk || state == BoyState.PushingStill) && interactor != null)
-                                    state = BoyState.PushingStill;
-                                else
-                                    state = BoyState.Idle;
-                            }
-                        }
-                        else
-                        {
-                            if (state != BoyState.StairsRight && state != BoyState.StairsLeft)
-                            {
-                                if ((state == BoyState.PushWalk || state == BoyState.PushingStill) && interactor != null)
-                                    state = BoyState.PushingStill;
-                                else
-                                    state = BoyState.Idle;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (state != BoyState.ControllingChair)
-                    {
-                        if (control.keyState.IsKeyDown(Keys.Right) || control.padState.IsButtonDown(Buttons.LeftThumbstickRight))
-                        {
-                            if ((state != BoyState.PushWalk && state != BoyState.PushingStill) || (interactor != null && ((Wardrobe)interactor).X > X))
-                                direction = Direction.Right;
-                            if (state == BoyState.Idle)
-                                state = BoyState.Walk;
-                            if (state == BoyState.PushingStill && direction == Direction.Right && interactor != null)
-                                state = BoyState.PushWalk;
-                        }
-                        else if (control.keyState.IsKeyDown(Keys.Left) || control.padState.IsButtonDown(Buttons.LeftThumbstickLeft))
-                        {
-                            if ((state != BoyState.PushWalk && state != BoyState.PushingStill) || (interactor != null && ((Wardrobe)interactor).X < X))
-                                direction = Direction.Left;
-                            if (state == BoyState.Idle)
-                                state = BoyState.Walk;
-                            if (state == BoyState.PushingStill && direction == Direction.Left && interactor != null)
-                                state = BoyState.PushWalk;
-                        }
-                    }
-                }
-                if (state == BoyState.ControllingChair)
-                {
-
-                    if (nearestChair != null && nearestChair.state == Chairs.ChairsState.Moving)
-                    {
-                        if (control.keyState.IsKeyDown(Keys.Right) || control.padState.IsButtonDown(Buttons.LeftThumbstickRight))
-                        {
-                            nearestChair.move(Direction.Right);
-                        }
-                        else if (control.keyState.IsKeyDown(Keys.Left) || control.padState.IsButtonDown(Buttons.LeftThumbstickLeft))
-                        {
-                            nearestChair.move(Direction.Left);
-                        }
-                        if (control.keyState.IsKeyDown(Keys.Up) || control.padState.IsButtonDown(Buttons.LeftThumbstickUp))
-                        {
-                            nearestChair.move(Direction.Up);
-                        }
-                        else if (control.keyState.IsKeyDown(Keys.Down) || control.padState.IsButtonDown(Buttons.LeftThumbstickDown))
-                        {
-                            nearestChair.move(Direction.Down);
-                        }
-                    }
-                    else
-                    {
-                        state = BoyState.Idle;
-                    }
-                }
+            if (NearestChair != null && NearestChair.State == Chair.ChairsState.Moving)
+            {
+                if (control.KeyState.IsKeyDown(Keys.Right) || control.PadState.IsButtonDown(Buttons.LeftThumbstickRight))
+                    NearestChair.Move(Direction.Right);
+                else if (control.KeyState.IsKeyDown(Keys.Left) || control.PadState.IsButtonDown(Buttons.LeftThumbstickLeft))
+                    NearestChair.Move(Direction.Left);
+                if (control.KeyState.IsKeyDown(Keys.Up) || control.PadState.IsButtonDown(Buttons.LeftThumbstickUp))
+                    NearestChair.Move(Direction.Up);
+                else if (control.KeyState.IsKeyDown(Keys.Down) || control.PadState.IsButtonDown(Buttons.LeftThumbstickDown))
+                    NearestChair.Move(Direction.Down);
+            }
+            else
+            {
+                State = BoyState.Idle;
             }
         }
 
-        public void update(GameTime time)
+        public void Update(GameTime time)
         {
-            int elapsed = time.ElapsedGameTime.Milliseconds;
-            frameTime += elapsed;
-            checkInput(control);
-            drawLayer = DrawLayer.Player;
+            var elapsed = time.ElapsedGameTime.Milliseconds;
+            _frameTime += elapsed;
+            CheckInput(_control);
+            _drawLayer = DrawLayer.Player;
 
-            switch (state)
+            switch (State)
             {
                 case BoyState.Idle:
-                    if (Animation == "pushstill" || Animation == "startpush" || Animation == "push")
+                    switch (Animation)
                     {
-                        Animation = "endpush";
+                        case "pushstill":
+                        case "startpush":
+                        case "push":
+                            Animation = "endpush";
+                            break;
+                        case "control":
+                            Animation = "controlend";
+                            break;
+                        case "endpush" when _frame == 2:
+                        case "controlend" when _frame == 2:
+                        case "walk":
+                            Animation = "stand";
+                            break;
+                        default:
+                            Animation = Animation;
+                            break;
                     }
-                    if (Animation == "control")
-                    {
-                        Animation = "controlend";
-                    }
-                    if ((Animation == "endpush" || Animation == "controlend") && frame == 2 || Animation == "walk")
-                    {
-                        Animation = "stand";
-                    }
-
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
                     break;
                 case BoyState.Walk:
                     Animation = "walk";
-                    moveSpeedX = 3;
-                    moveSpeedY = 0;
-                    control.hideDialogue();
+                    _moveSpeedX = 3;
+                    _moveSpeedY = 0;
+                    _control.HideDialogue();
                     break;
                 case BoyState.StairsLeft:
                     Animation = "walk";
-                    moveSpeedX = 3;
-                    moveSpeedY = 2;
-                    drawLayer = DrawLayer.PlayerBehindStairs;
+                    _moveSpeedX = 3;
+                    _moveSpeedY = 2;
+                    _drawLayer = DrawLayer.PlayerBehindStairs;
                     break;
                 case BoyState.StairsRight:
                     Animation = "walk";
-                    moveSpeedX = 3;
-                    moveSpeedY = -2;
-                    drawLayer = DrawLayer.PlayerBehindStairs;
+                    _moveSpeedX = 3;
+                    _moveSpeedY = -2;
+                    _drawLayer = DrawLayer.PlayerBehindStairs;
                     break;
                 case BoyState.PushingStill:
 
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
-                    if (Animation == "walk" || Animation == "stand")
-                         Animation = "startpush";
-                    if (Animation == "startpush" && frame == 3 || Animation == "push")
-                        Animation = "pushstill";
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
+                    switch (Animation)
+                    {
+                        case "walk":
+                        case "stand":
+                            Animation = "startpush";
+                            break;
+                        case "startpush" when _frame == 3:
+                        case "push":
+                            Animation = "pushstill";
+                            break;
+                        default:
+                            Animation = Animation;
+                            break;
+                    }
                     break;
                 case BoyState.PushWalk:
-                    moveSpeedY = 0;
-                    if (Animation == "walk" || Animation == "stand")
+                    _moveSpeedY = 0;
+                    switch (Animation)
                     {
-                        moveSpeedX = 0;
-                        Animation = "startpush";
+                        case "walk":
+                        case "stand":
+                            _moveSpeedX = 0;
+                            Animation = "startpush";
+                            break;
+                        case "startpush" when _frame == 3:
+                        case "pushstill":
+                            Animation = "push";
+                            _pushSoundTimer = 201;
+                            break;
+                        case "push":
+                            _moveSpeedX = 3;
+                            break;
+                        default:
+                            Animation = Animation;
+                            break;
                     }
-                    if (Animation == "startpush" && frame == 3 || Animation == "pushstill")
-                    {
-                        Animation = "push";
-                        pushSoundTimer = 201;
-                    }
-                    if (Animation == "push")
-                        moveSpeedX = 3;
                     break;
-
                 case BoyState.Teleport:
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
-                    if (Animation == "walk" || Animation == "stand")
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
+                    switch (Animation)
                     {
-                        Animation = "enterwardrobe";
-                        Wardrobe targetWR = ((Wardrobe)interactor).getLinkedWR();
-                        if (targetWR != null)
-                        {
-                            Rectangle target = targetWR.GetBounds();
-                            teleportTo = new Vector2(target.X + 16, target.Y + 24);
-                            interactor = null;
-                        }
-                    }
-                    if (Animation == "enterwardrobe" && frame == 6)
-                    {
-                        position = new Vector2(teleportTo.X, teleportTo.Y);
-                        Animation = "leavewardrobe";
-                    }
-                    if (Animation == "leavewardrobe" && frame == 7)
-                    {
-                        Animation = "stand";
-                        state = BoyState.Idle;
+                        case "walk":
+                        case "stand":
+                            Animation = "enterwardrobe";
+                            var targetWr = ((Wardrobe)Interactor).GetLinkedWr();
+                            if (targetWr != null)
+                            {
+                                var target = targetWr.GetBounds();
+                                _teleportTo = new Vector2(target.X + 16, target.Y + 24);
+                                Interactor = null;
+                            }
+                            break;
+                        case "enterwardrobe" when _frame == 6:
+                            _position = new Vector2(_teleportTo.X, _teleportTo.Y);
+                            Animation = "leavewardrobe";
+                            break;
+                        case "leavewardrobe" when _frame == 7:
+                            Animation = "stand";
+                            State = BoyState.Idle;
+                            break;
+                        default:
+                            Animation = Animation;
+                            break;
                     }
                     break;
                 case BoyState.TimeTravel:
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
-                    if (Animation == "walk" || Animation == "stand")
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
+                    switch (Animation)
                     {
-                        Portrait p = (Portrait)interactor;
-                        if (p.wasMoved)
-                            teleportTo = p.movedPos;
-                        else
-                            teleportTo = new Vector2();
-                        Animation = "enterportrait";
-                        if (control.timePeriod == TimePeriod.Present) 
-                            timeTravelTo = ((Portrait)interactor).sendTime;
-                        interactor = null;
-                    }
-                    if (Animation == "enterportrait" && frame == 7)
-                    {
-                        if (control.timePeriod != TimePeriod.Present)
-                            control.timePeriod = TimePeriod.Present;
-                        else
-                            control.timePeriod = timeTravelTo;
-                        Animation = "leaveportrait";
-                        if (teleportTo.X != 0 && teleportTo.Y != 0)
-                        {
-                            X = teleportTo.X;
-                            Y = teleportTo.Y;
-                        }
-                    }
-                    if (Animation == "leaveportrait" && frame == 7)
-                    {
-                        Animation = "stand";
-                        state = BoyState.Idle;
+                        case "walk":
+                        case "stand":
+                            var p = (Portrait)Interactor;
+                            _teleportTo = p.WasMoved ? p.MovedPos : new Vector2();
+                            Animation = "enterportrait";
+                            if (_control.TimePeriod == TimePeriod.Present)
+                                _timeTravelTo = ((Portrait)Interactor).SendTime;
+                            Interactor = null;
+                            break;
+                        case "enterportrait" when _frame == 7:
+                            _control.TimePeriod = _control.TimePeriod != TimePeriod.Present ? TimePeriod.Present : _timeTravelTo;
+                            Animation = "leaveportrait";
+                            if (Math.Abs(_teleportTo.X) > 0 && Math.Abs(_teleportTo.Y) > 0)
+                            {
+                                X = _teleportTo.X;
+                                Y = _teleportTo.Y;
+                            }
+                            break;
+                        case "leaveportrait" when _frame == 7:
+                            Animation = "stand";
+                            State = BoyState.Idle;
+                            break;
+                        default:
+                            Animation = Animation;
+                            break;
                     }
                     break;
                 case BoyState.ControllingChair:
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
-                    if (Animation != "control")
-                    {
-                        Animation = "controlstart";
-                    }
-                    if (Animation == "controlstart" && frame == 2)
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
+                    if (Animation != "control") Animation = "controlstart";
+                    if (Animation == "controlstart" && _frame == 2)
                         Animation = "control";
                     break;
                 case BoyState.Die:
-                    moveSpeedX = 0;
-                    moveSpeedY = 0;
+                    _moveSpeedX = 0;
+                    _moveSpeedY = 0;
                     Animation = "disappear";
-                    if (frame == 7)
+                    if (_frame == 7)
                     {
-                        reset();
-                        control.resetLevel();
+                        Reset();
+                        _control.ResetLevel();
                     }
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            if (frameTime >= frameLength)
+
+            if (_frameTime < _frameLength) return;
+
+            var flip = Direction == Direction.Left ? -1 : 1;
+            X += _moveSpeedX * flip;
+            if (State == BoyState.PushWalk && Animation == "push" && Interactor != null)
             {
-                int flip = 1;
-                if (direction == Direction.Left)
-                    flip = -1;
-                X += moveSpeedX * flip;
-                if (state == BoyState.PushWalk && Animation == "push" && interactor != null)
+                _pushSoundTimer += elapsed;
+                var w = (Wardrobe)Interactor;
+                if (!_control.CollidingWithSolid(w.PushBox, false))
                 {
-                    pushSoundTimer += elapsed;
-                    Wardrobe w = (Wardrobe)interactor;
-                    if (!control.collidingWithSolid(w.pushBox, false))
+                    w.X += (int)(_moveSpeedX * flip);
+                    if (_pushSoundTimer > 200)
                     {
-                        w.X += (int)(moveSpeedX * flip);
-                        if (pushSoundTimer > 200 && GameTitle.toggleSound)
-                        {
-                            soundMan.playSound("Pushing Wardrobe");
-                            pushSoundTimer = 0;
-                        }
+                        _soundMan.PlaySound("Pushing Wardrobe");
+                        _pushSoundTimer = 0;
                     }
-                    else
-                        X -= moveSpeedX * flip;
                 }
-                if (moveSpeedY == 0)
+                else
                 {
-                    moveSpeedY = 1;
-                    flip = 1;
+                    X -= _moveSpeedX * flip;
                 }
-                Y += moveSpeedY * flip;
-                frameTime = 0;
-                frame = (frame + 1) % animFrames.Count;
             }
+            if (Math.Abs(_moveSpeedY) <= 0)
+            {
+                _moveSpeedY = 1;
+                flip = 1;
+            }
+            Y += _moveSpeedY * flip;
+            _frameTime = 0;
+            _frame = (_frame + 1) % _animFrames.Count;
         }
 
         public Rectangle GetBounds()
         {
-            return new Rectangle((int)(position.X), (int)(position.Y), Width, Height);
+            return new Rectangle((int)(_position.X), (int)(_position.Y), Width, _height);
         }
 
         public bool IsSolid()

@@ -9,19 +9,20 @@ namespace Paranothing
 
         public Dictionary<string, SoundEffect> SoundEffects { get; }
 
-        public static SoundManager getInstance()
+        public static SoundManager GetInstance()
         {
             return _instance ?? (_instance = new SoundManager());
         }
 
-        private SoundManager() 
+        private SoundManager()
         {
             SoundEffects = new Dictionary<string, SoundEffect>();
         }
 
-        public void playSound(string soundName)
+        public void PlaySound(string soundName)
         {
-            SoundEffects[soundName].Play();
+            if (GameTitle.ToggleSound)
+                SoundEffects[soundName].Play();
         }
     }
 }

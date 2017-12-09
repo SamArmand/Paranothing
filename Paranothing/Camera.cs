@@ -2,38 +2,40 @@
 
 namespace Paranothing
 {
-    class Camera : Updatable
+    internal sealed class Camera : IUpdatable
     {
-        private GameController control = GameController.getInstance();
-        public int X, Y, Width, Height;
-        public float scale;
-        public Camera(int X, int Y, int Width, int Height, float scale)
+        private readonly GameController _control = GameController.GetInstance();
+        public int X, Y;
+        public readonly int Width;
+        public readonly int Height;
+        public readonly float Scale;
+        public Camera(int x, int y, int width, int height, float scale)
         {
-            this.X = X;
-            this.Y = Y;
-            this.Width = Width;
-            this.Height = Height;
-            this.scale = scale;
+            X = x;
+            Y = y;
+            Width = width;
+            Height = height;
+            Scale = scale;
         }
 
-        public void update(GameTime time)
+        public void Update(GameTime time)
         {
-            Boy player = control.player;
-            Level level = control.level;
+            var player = _control.Player;
+            var level = _control.Level;
 
-            X = (int)player.X - (int)(Width/ scale / 2);
-            Y = (int)player.Y - (int)(Height/ scale/ 2);
+            X = (int)player.X - (int)(Width/ Scale / 2);
+            Y = (int)player.Y - (int)(Height/ Scale/ 2);
 
-            if (X > level.Width - Width/scale)
-                X = level.Width - (int)(Width/scale);
-            if (Y > level.Height - Height/scale)
-                Y = level.Height - (int)(Height/scale);
+            if (X > level.Width - Width/Scale)
+                X = level.Width - (int)(Width/Scale);
+            if (Y > level.Height - Height/Scale)
+                Y = level.Height - (int)(Height/Scale);
             if (X < 0)
                 X = 0;
-            if (Y < 0 || level.Height < Height/scale)
+            if (Y < 0 || level.Height < Height/Scale)
                 Y = 0;
-            if (Height/scale > level.Height)
-                Y = -(int)((Height/scale - level.Height) / 2);
+            if (Height/Scale > level.Height)
+                Y = -(int)((Height/Scale - level.Height) / 2);
         }
     }
 }

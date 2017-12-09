@@ -1,365 +1,297 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.Xna.Framework;
 
 namespace Paranothing
 {
-    public class Level
+    internal sealed class Level
     {
-        public int Width, Height; // Complete width and height of the level
-        public int playerX, playerY; // Player's starting position
-        public Color wallpaperColor;
-        public string name { get; private set; }
-        public string nextLevel { get; private set; }
-        public TimePeriod startTime;
-        private List<Saveable> savedObjs;
-        public Level()
-        {
-            Width = 640;
-            Height = 360;
-            playerX = 38;
-            playerY = 58;
-            savedObjs = new List<Saveable>();
-            startTime = TimePeriod.Present;
-            wallpaperColor = Color.White;
-        }
-
-        public Level(int Width, int Height, int playerX, int playerY, Color wallpaperColor, TimePeriod startTime)
-        {
-            this.Width = Width;
-            this.Height = Height;
-            this.playerX = playerX;
-            this.playerY = playerY;
-            this.startTime = startTime;
-            this.wallpaperColor = wallpaperColor;
-            savedObjs = new List<Saveable>();
-        }
+        internal int Width; // Complete width and height of the level
+        internal int Height; // Complete width and height of the level
+        internal int PlayerX, PlayerY; // Player's starting position
+        internal Color WallpaperColor;
+        internal string Name { get; private set; }
+        internal string NextLevel { get; private set; }
+        internal TimePeriod StartTime;
+        private List<ISaveable> _savedObjs;
 
         public Level(string filename)
         {
-            savedObjs = new List<Saveable>();
-            loadFromFile(filename);
+            _savedObjs = new List<ISaveable>();
+            LoadFromFile(filename);
         }
 
-        public void addObj(Saveable obj)
+        private void AddObj(ISaveable obj)
         {
-            savedObjs.Add(obj);
+            _savedObjs.Add(obj);
         }
 
-        public void removeObj(Saveable obj)
+        public IEnumerable<ISaveable> GetObjs()
         {
-            savedObjs.Remove(obj);
+            return _savedObjs;
         }
 
-        public List<Saveable> getObjs()
-        {
-            return savedObjs;
-        }
-
-        public string getSaveString()
-        {
-            string saveString = "StartLevel";
-            saveString += "\nlevelName:" + name;
-            saveString += "\nplayerX:" + playerX;
-            saveString += "\nplayerY:" + playerY;
-            saveString += "\nwidth:" + Width;
-            saveString += "\nheight:" + Height;
-            saveString += "\nstartTime:" + startTime;
-            saveString += "\ncolor:" + wallpaperColor.R+","+wallpaperColor.G+","+wallpaperColor.B;
-            foreach (Saveable obj in savedObjs)
-            {
-                saveString += "\n" + obj.saveData();
-            }
-            saveString += "\nEndLevel";
-            return saveString;
-        }
-
-        public void loadFromFile(string filename)
+        private void LoadFromFile(string filename)
         {
             try
             {
-                Stream stream = TitleContainer.OpenStream(filename);
-                StreamReader reader = new StreamReader(stream);
-                createFromString(reader.ReadToEnd());
+                CreateFromString(new StreamReader(TitleContainer.OpenStream(filename)).ReadToEnd());
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
             }
         }
 
-        public void createFromString(string saveString)
+        private void CreateFromString(string saveString)
         {
             Width = 640;
             Height = 360;
-            playerX = 38;
-            playerY = 58;
-            savedObjs = new List<Saveable>();
+            PlayerX = 38;
+            PlayerY = 58;
+            _savedObjs = new List<ISaveable>();
 
-            string[] saveLines = saveString.Split(new char[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("StartLevel") && lineNum < saveLines.Length)
+            var saveLines = saveString.Split(new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("StartLevel", StringComparison.Ordinal) && lineNum < saveLines.Length) line = saveLines[lineNum++];
+            var objData = new StringBuilder();
+            while (!line.StartsWith("EndLevel", StringComparison.Ordinal) && lineNum < saveLines.Length)
             {
-                line = saveLines[lineNum];
-                lineNum++;
-            }
-            while (!line.StartsWith("EndLevel") && lineNum < saveLines.Length)
-            {
-                string objData = "";
                 line = saveLines[lineNum];
                 // Level attributes
-                if (line.StartsWith("levelName:"))
-                    name = line.Substring(10).Trim();
-                if (line.StartsWith("nextLevel:"))
-                    nextLevel = line.Substring(10).Trim();
-                if (line.StartsWith("playerX:"))
-                    playerX = int.Parse(line.Substring(8));
-                if (line.StartsWith("playerY:"))
-                    playerY = int.Parse(line.Substring(8));
-                if (line.StartsWith("width:"))
+                if (line.StartsWith("levelName:", StringComparison.Ordinal))
+                    Name = line.Substring(10).Trim();
+                if (line.StartsWith("nextLevel:", StringComparison.Ordinal))
+                    NextLevel = line.Substring(10).Trim();
+                if (line.StartsWith("playerX:", StringComparison.Ordinal))
+                    PlayerX = int.Parse(line.Substring(8));
+                if (line.StartsWith("playerY:", StringComparison.Ordinal))
+                    PlayerY = int.Parse(line.Substring(8));
+                if (line.StartsWith("width:", StringComparison.Ordinal))
                     Width = int.Parse(line.Substring(6));
-                if (line.StartsWith("height:"))
+                if (line.StartsWith("height:", StringComparison.Ordinal))
                     Height = int.Parse(line.Substring(7));
-                if (line.StartsWith("startTime:"))
+                if (line.StartsWith("startTime:", StringComparison.Ordinal))
                 {
-                    startTime = TimePeriod.Present;
-                    string time = line.Substring(10).Trim();
-                    if (time == "Present")
+                    StartTime = TimePeriod.Present;
+                    var time = line.Substring(10).Trim();
+                    switch (time)
                     {
-                        startTime = TimePeriod.Present;
-                    }
-                    if (time == "Past")
-                    {
-                        startTime = TimePeriod.Past;
-                    }
-                    if (time == "FarPast")
-                    {
-                        startTime = TimePeriod.FarPast;
+                        case "Past":
+                            StartTime = TimePeriod.Past;
+                            break;
+                        case "FarPast":
+                            StartTime = TimePeriod.FarPast;
+                            break;
+                        default:
+                            StartTime = TimePeriod.Present;
+                            break;
                     }
                 }
-                if (line.StartsWith("color:"))
-                    wallpaperColor = parseColor(line.Substring(6));
+                if (line.StartsWith("color:", StringComparison.Ordinal))
+                    WallpaperColor = ParseColor(line.Substring(6));
                 // Dialogue trigger
-                if (line.StartsWith("StartDialogue"))
+                if (line.StartsWith("StartDialogue", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndDialogue") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndDialogue", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Dialogue(objData));
+                    AddObj(new Dialogue(objData.ToString()));
                 }
                 // Shadow
-                if (line.StartsWith("StartShadow"))
+                if (line.StartsWith("StartShadow", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndShadow") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndShadow", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Shadows(objData));
+                    AddObj(new Shadows(objData.ToString()));
                 }
                 // Stairs
-                if (line.StartsWith("StartStair"))
+                if (line.StartsWith("StartStair", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndStair") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndStair", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Stairs(objData));
+                    AddObj(new Stairs(objData.ToString()));
                 }
                 // Rubble
-                if (line.StartsWith("StartRubble"))
+                if (line.StartsWith("StartRubble", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndRubble") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndRubble", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Rubble(objData));
+                    AddObj(new Rubble(objData.ToString()));
                 }
                 // Chair
-                if (line.StartsWith("StartChairs"))
+                if (line.StartsWith("StartChairs", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndChairs") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndChairs", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Chairs(objData));
+                    AddObj(new Chair(objData.ToString()));
                 }
                 // Door
-                if (line.StartsWith("StartDoor"))
+                if (line.StartsWith("StartDoor", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndDoor") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndDoor", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Doors(objData));
+                    AddObj(new Door(objData.ToString()));
                 }
                 // Wardrobe
-                if (line.StartsWith("StartWardrobe"))
+                if (line.StartsWith("StartWardrobe", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndWardrobe") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndWardrobe", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Wardrobe(objData));
+                    AddObj(new Wardrobe(objData.ToString()));
                 }
                 // Key
-                if (line.StartsWith("StartKey"))
+                if (line.StartsWith("StartKey", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndKey") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndKey", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new DoorKeys(objData));
+                    AddObj(new DoorKey(objData.ToString()));
                 }
                 // Portrait
-                if (line.StartsWith("StartPortrait"))
+                if (line.StartsWith("StartPortrait", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndPortrait") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndPortrait", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Portrait(objData, "EndPortrait"));
+                    AddObj(new Portrait(objData.ToString(), "EndPortrait"));
                 }
                 // Older Painting
-                if (line.StartsWith("StartOldPortrait"))
+                if (line.StartsWith("StartOldPortrait", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndOldPortrait") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndOldPortrait", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Portrait(objData, TimePeriod.FarPast));
+                    AddObj(new Portrait(objData.ToString(), TimePeriod.FarPast));
                 }
                 // Moved Portrait
-                if (line.StartsWith("StartMovedPortrait"))
+                if (line.StartsWith("StartMovedPortrait", StringComparison.Ordinal))
                 {
                     Portrait pPres = null, pPast = null;
-                    while (!line.StartsWith("EndMovedPortrait") && lineNum < saveLines.Length)
+                    while (!line.StartsWith("EndMovedPortrait", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
                         line = saveLines[lineNum];
-                        if (line.StartsWith("StartPresentPortrait"))
+                        if (line.StartsWith("StartPresentPortrait", StringComparison.Ordinal))
                         {
-                            objData = line;
-                            while (!line.StartsWith("EndPresentPortrait") && lineNum < saveLines.Length)
+                            objData.Clear().Append(line);
+                            while (!line.StartsWith("EndPresentPortrait", StringComparison.Ordinal) && lineNum < saveLines.Length)
                             {
-                                line = saveLines[lineNum];
-                                objData += "\n" + line;
-                                lineNum++;
+                                line = saveLines[lineNum++];
+                                objData.Append("\n" + line);
                             }
-                            pPres = new Portrait(objData, TimePeriod.Present);
+                            pPres = new Portrait(objData.ToString(), TimePeriod.Present);
 
-                            addObj(pPres);
+                            AddObj(pPres);
                         }
-                        if (line.StartsWith("StartPastPortrait"))
+                        if (line.StartsWith("StartPastPortrait", StringComparison.Ordinal))
                         {
-                            objData = line;
-                            while (!line.StartsWith("EndPastPortrait") && lineNum < saveLines.Length)
+                            objData.Clear().Append(line);
+                            while (!line.StartsWith("EndPastPortrait", StringComparison.Ordinal) && lineNum < saveLines.Length)
                             {
-                                line = saveLines[lineNum];
-                                objData += "\n" + line;
-                                lineNum++;
+                                line = saveLines[lineNum++];
+                                objData.Append("\n" + line);
                             }
-                            pPast = new Portrait(objData, TimePeriod.Past);
-                            addObj(pPast);
+                            pPast = new Portrait(objData.ToString(), TimePeriod.Past);
+                            AddObj(pPast);
                         }
                         lineNum++;
                     }
                     if (pPres != null && pPast  != null)
                     {
-                        pPres.movedPos = new Vector2(pPast.X, pPast.Y);
-                        pPast.movedPos = new Vector2(pPres.X, pPres.Y);
+                        pPres.MovedPos = new Vector2(pPast.X, pPast.Y);
+                        pPast.MovedPos = new Vector2(pPres.X, pPres.Y);
                     }
                 }
                 // Bookcase
-                if (line.StartsWith("StartBookcase"))
+                if (line.StartsWith("StartBookcase", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndBookcase") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndBookcase", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Bookcases(objData));
+                    AddObj(new Bookcase(objData.ToString()));
                 }
                 // Button
-                if (line.StartsWith("StartButton"))
+                if (line.StartsWith("StartButton", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndButton") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndButton", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Button(objData));
+                    AddObj(new Button(objData.ToString()));
                 }
                 // Wall
-                if (line.StartsWith("StartWall"))
+                if (line.StartsWith("StartWall", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndWall") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndWall", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Wall(objData)); 
+                    AddObj(new Wall(objData.ToString()));
                 }
                 // Floor
-                if (line.StartsWith("StartFloor"))
+                if (line.StartsWith("StartFloor", StringComparison.Ordinal))
                 {
-                    objData = line;
-                    while (!line.StartsWith("EndFloor") && lineNum < saveLines.Length)
+                    objData.Clear().Append(line);
+                    while (!line.StartsWith("EndFloor", StringComparison.Ordinal) && lineNum < saveLines.Length)
                     {
-                        line = saveLines[lineNum];
-                        objData += "\n" + line;
-                        lineNum++;
+                        line = saveLines[lineNum++];
+                        objData.Append("\n" + line);
                     }
-                    addObj(new Floor(objData));
+                    AddObj(new Floor(objData.ToString()));
                 }
                 lineNum++;
             }
         }
 
-        private Color parseColor(string color)
+        private static Color ParseColor(string color)
         {
-            string[] rgb = color.Split(new char[] { ',' });
-            int r = int.Parse(rgb[0]);
-            int g = int.Parse(rgb[1]);
-            int b = int.Parse(rgb[2]);
-
-            return new Color(r, g, b);
+            var rgb = color.Split(',');
+            return new Color(int.Parse(rgb[0]), int.Parse(rgb[1]), int.Parse(rgb[2]));
         }
     }
 }

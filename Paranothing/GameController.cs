@@ -7,484 +7,402 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Paranothing
 {
-    class GameController
+    internal sealed class GameController
     {
-        private SoundManager soundMan = SoundManager.getInstance();
-        public KeyboardState keyState;
-        public GamePadState padState;
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        public KeyboardState KeyState;
+        public GamePadState PadState;
 
-        private List<Updatable> updatableObjs;
-        private List<IDrawable> drawableObjs;
-        private List<ICollideable> collideableObjs;
-        public Boy player;
-        public GameState state;
-        public TimePeriod timePeriod;
-        public Level level;
-        public Camera camera;
+        private List<IUpdatable> _updatableObjs;
+        private List<IDrawable> _drawableObjs;
+        private List<ICollideable> _collideableObjs;
+        public Boy Player;
+        public GameState State;
+        public TimePeriod TimePeriod;
+        public Level Level;
+        public Camera Camera;
 
-        private bool soundTriggered = false;
-        private Vector2 soundPos;
-        private bool showingDialogue = false;
-        private string dialogue = "";
-        private int dialogueTimer = 0;
+        private bool _soundTriggered;
+        private Vector2 _soundPos;
+        private bool _showingDialogue;
+        private string _dialogue = "";
+        private int _dialogueTimer;
 
-        private Dictionary<string, Level> levels;
+        private readonly Dictionary<string, Level> _levels;
 
-        private static GameController instance;
+        private static GameController _instance;
 
-        public static GameController getInstance()
+        public static GameController GetInstance()
         {
-            if (null == instance)
+            return _instance ?? (_instance = new GameController());
+        }
+
+        private GameController()
+        {
+            _updatableObjs = new List<IUpdatable>();
+            _drawableObjs = new List<IDrawable>();
+            _collideableObjs = new List<ICollideable>();
+            _levels = new Dictionary<string, Level>();
+            State = GameState.Game;
+            TimePeriod = TimePeriod.Present;
+        }
+
+        public void AddLevel(Level level)
+        {
+            _levels.Add(level.Name, level);
+        }
+
+        public void GoToLevel(string levelName)
+        {
+            if (_levels.ContainsKey(levelName)) _levels.TryGetValue(levelName, out Level);
+        }
+
+        public bool NextLevel()
+        {
+            var nextLevel = Level.NextLevel;
+            if (!_levels.ContainsKey(nextLevel)) return false;
+
+            _levels.TryGetValue(nextLevel, out Level);
+            return true;
+        }
+
+        public void SetPlayer(Boy player)
+        {
+            Player = player;
+            AddObject(player);
+            AddObject(player.ActionBubble);
+        }
+
+        public void SetCamera(Camera camera)
+        {
+            Camera = camera;
+            AddObject(camera);
+        }
+
+        public void InitLevel(bool preserveTime)
+        {
+            _showingDialogue = false;
+            _updatableObjs = new List<IUpdatable>();
+            _drawableObjs = new List<IDrawable>();
+            _collideableObjs = new List<ICollideable>();
+            Player.Reset();
+            Player.X = Level.PlayerX;
+            Player.Y = Level.PlayerY;
+            AddObject(Player);
+            AddObject(Player.ActionBubble);
+            AddObject(Camera);
+            foreach (var obj in Level.GetObjs())
             {
-                instance = new GameController();
-            }
-            return instance;
-        }
-
-        protected GameController()
-        {
-            updatableObjs = new List<Updatable>();
-            drawableObjs = new List<IDrawable>();
-            collideableObjs = new List<ICollideable>();
-            levels = new Dictionary<string, Level>();
-            state = GameState.Game;
-            timePeriod = TimePeriod.Present;
-        }
-
-        public void addLevel(Level level)
-        {
-            levels.Add(level.name, level);
-        }
-
-        public void goToLevel(string levelName)
-        {
-            if (levels.ContainsKey(levelName))
-            {
-                levels.TryGetValue(levelName, out level);
-            }
-        }
-
-        public bool nextLevel()
-        {
-            string nextLevel = level.nextLevel;
-            if (levels.ContainsKey(nextLevel))
-            {
-                levels.TryGetValue(nextLevel, out level);
-                return true;
-            }
-            return false;
-        }
-
-        public string currLevel()
-        {
-            return level.name;
-        }
-
-        public void setPlayer(Boy player)
-        {
-            this.player = player;
-            addObject(player);
-            addObject(player.actionBubble);
-        }
-
-        public void setCamera(Camera camera)
-        {
-            this.camera = camera;
-            addObject(camera);
-        }
-
-        public void initLevel(bool preserveTime)
-        {
-            showingDialogue = false;
-            updatableObjs = new List<Updatable>();
-            drawableObjs = new List<IDrawable>();
-            collideableObjs = new List<ICollideable>();
-            player.reset();
-            player.X = level.playerX;
-            player.Y = level.playerY;
-            addObject(player);
-            addObject(player.actionBubble);
-            addObject(camera);
-            foreach (Saveable obj in level.getObjs())
-            {
-                obj.reset();
-                addObject(obj);
+                obj.Reset();
+                AddObject(obj);
             }
             if (!preserveTime)
-                timePeriod = level.startTime;
+                TimePeriod = Level.StartTime;
         }
 
-        public void resetLevel()
+        public void ResetLevel()
         {
-            showingDialogue = false;
-            player.X = level.playerX;
-            player.Y = level.playerY;
-            foreach (Saveable obj in level.getObjs())
+            _showingDialogue = false;
+            Player.X = Level.PlayerX;
+            Player.Y = Level.PlayerY;
+            foreach (var obj in Level.GetObjs()) obj.Reset();
+            TimePeriod = Level.StartTime;
+        }
+
+        public void UpdateObjs(GameTime time)
+        {
+            KeyState = Keyboard.GetState();
+            PadState = GamePad.GetState(PlayerIndex.One);
+
+            if (_showingDialogue)
+                _dialogueTimer += time.ElapsedGameTime.Milliseconds;
+            else
+                _dialogueTimer = 0;
+
+            foreach (var obj in _updatableObjs) obj.Update(time);
+
+            Player.ActionBubble.Hide();
+
+            if (Math.Abs(_soundPos.X) > 0 && Math.Abs(_soundPos.Y) > 0)
+                _soundTriggered = true;
+            else _soundTriggered = false;
+
+            foreach (var obj in _collideableObjs)
             {
-                obj.reset();
+                var colliding = Collides(obj.GetBounds(), Player.GetBounds());
+                switch (obj)
+                {
+                    case Shadows _:
+                        UpdateShadow((Shadows)obj, colliding);
+                        break;
+                    case Dialogue _:
+                        if (colliding) ((Dialogue)obj).Play();
+                        break;
+                    case DoorKey _:
+                        if (!colliding) continue;
+
+                        var key = DoorKey.GetKey(((DoorKey)obj).Name);
+                        if (!key.RestrictTime || TimePeriod == key.InTime)
+                            key.PickedUp = true;
+                        break;
+                    case Button _:
+                        var button = (Button)obj;
+                        var pressed = _collideableObjs.Any(
+                            c => (c is Boy || TimePeriod == TimePeriod.Present && c is Shadows)
+                                 && Collides(button.GetBounds(), c.GetBounds()));
+                        if (!button.StepOn && pressed)
+                            _soundMan.PlaySound("Button Press");
+                        button.StepOn = pressed;
+                        break;
+                    case Stairs _:
+                        UpdateStairs((Stairs)obj, colliding);
+                        break;
+                    case Chair _:
+                        UpdateChair((Chair)obj);
+                        break;
+                    case Wardrobe _:
+                        UpdateWardrobe((Wardrobe)obj, colliding);
+                        break;
+                    case Bookcase _:
+                        var bookcase = (Bookcase)obj;
+                        if (!colliding || bookcase.State != Bookcase.BookcasesState.Open) continue;
+
+                        Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Bookcase, false);
+                        Player.ActionBubble.Show();
+                        Player.Interactor = (IInteractable)obj;
+                        break;
+                    case Portrait _:
+                        UpdatePortrait((Portrait)obj, colliding);
+                        break;
+                    case Floor _:
+                        if (Player.State == Boy.BoyState.StairsLeft || Player.State == Boy.BoyState.StairsRight) continue;
+
+                        while (Collides(Player.GetBounds(), ((Floor)obj).GetBounds())) Player.Y--;
+                        break;
+                    case Door _:
+                        var door = (Door)obj;
+                        if (!door.IsLocked() || !colliding || Player.State != Boy.BoyState.Walk) continue;
+
+                        if (Player.Direction == Direction.Left && Player.X > door.GetBounds().X
+                            || Player.Direction == Direction.Right && Player.X < door.GetBounds().X)
+                            Player.State = Boy.BoyState.PushingStill;
+                        break;
+                    default:
+                        if (!Player.ActionBubble.IsVisible() && !(Player.Interactor is Wardrobe && (Player.State == Boy.BoyState.PushingStill || Player.State == Boy.BoyState.PushWalk)))
+                            Player.Interactor = null;
+                        var collider = obj;
+                        if (!colliding || Player.State != Boy.BoyState.Walk || !collider.IsSolid()) continue;
+
+                        if (Player.Direction == Direction.Left && Player.X > collider.GetBounds().X
+                            || (Player.Direction == Direction.Right && Player.X < collider.GetBounds().X))
+                            Player.State = Boy.BoyState.PushingStill;
+                        break;
+                }
             }
-            timePeriod = level.startTime;
-        }
+            if (_soundTriggered)
+                _soundPos = new Vector2();
+            if (Collides(Player.GetBounds(), new Rectangle(0, 0, Level.Width, Level.Height))) return;
 
-        public void updateObjs(GameTime time)
-        {
-            keyState = Keyboard.GetState();
-            padState = GamePad.GetState(PlayerIndex.One);
-            if (showingDialogue)
+            if (NextLevel())
             {
-                dialogueTimer += time.ElapsedGameTime.Milliseconds;
+                InitLevel(true);
             }
             else
             {
-                dialogueTimer = 0;
-            }
-            foreach (Updatable obj in updatableObjs)
-            {
-                obj.update(time);
-            }
-            player.actionBubble.hide();
-            if (soundPos != null && soundPos.X != 0 && soundPos.Y != 0)
-                soundTriggered = true;
-            else soundTriggered = false;
-            foreach (ICollideable obj in collideableObjs)
-            {
-                Boy.BoyState currState = player.state;
-                bool colliding = collides(((ICollideable)obj).GetBounds(), player.GetBounds());
-                if (obj is Shadows)
-                {
-                    Shadows shadow = (Shadows)obj;
-                    if (soundTriggered && timePeriod == TimePeriod.Present)
-                    {
-                        if (soundPos.Y >= shadow.Y && soundPos.Y <= shadow.Y + 81)
-                            shadow.stalkNoise((int)soundPos.X, (int)soundPos.Y);
-                    }
-                    if (colliding && timePeriod == TimePeriod.Present && player.state != Boy.BoyState.StairsLeft && player.state != Boy.BoyState.StairsRight)
-                    {
-                        if (shadow.X > player.X)
-                            player.direction = Direction.Right;
-                        else
-                            player.direction = Direction.Left;
-                        player.state = Boy.BoyState.Die;
-
-                        if (GameTitle.toggleSound)
-                        {
-                            soundMan.playSound("Death");
-                        }
-                        shadow.state = Shadows.ShadowState.Idle;
-                    }
-                }
-                else if (obj is Dialogue)
-                {
-                    if (colliding)
-                    {
-                        Dialogue d = (Dialogue)obj;
-                        d.Play();
-                    }
-                }
-                else if (obj is DoorKeys)
-                {
-                    if (colliding)
-                    {
-                        DoorKeys key = DoorKeys.getKey(((DoorKeys)obj).name);
-                        if (!key.restrictTime || timePeriod == key.inTime)
-                            key.pickedUp = true;
-                    }
-                }
-                else if (obj is Button)
-                {
-                    Button button = (Button)obj;
-                    bool pressed = false;
-                    foreach (ICollideable c in collideableObjs)
-                    {
-                        if ((c is Boy || (timePeriod == TimePeriod.Present && c is Shadows)) && collides(button.GetBounds(), c.GetBounds()))
-                        {
-                            pressed = true;
-                            break;
-                        }
-                    }
-                    if (!button.stepOn && pressed && GameTitle.toggleSound)
-                        soundMan.playSound("Button Press");
-                    button.stepOn = pressed;
-                }
-                else if (obj is Stairs)
-                {
-                    Stairs stair = (Stairs)obj;
-                    if (stair.IsSolid())
-                    {
-                        if (colliding)
-                        {
-                            if (player.X + 30 >= stair.X && player.X + 8 <= stair.X)
-                            {
-                                if (((stair.direction == Direction.Left && player.Y + 58 == stair.getSmallBounds().Y)
-                                    || (stair.direction == Direction.Right && player.Y + 58 == stair.Y + stair.GetBounds().Height))
-                                    && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
-                                {
-                                    player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
-                                    player.interactor = (IInteractable)obj;
-                                    player.actionBubble.show();
-                                }
-                            }
-                            else if (player.X + 30 >= stair.X + stair.GetBounds().Width && player.X + 8 <= stair.X + stair.GetBounds().Width)
-                            {
-                                if (((stair.direction == Direction.Right && player.Y + 58 == stair.getSmallBounds().Y)
-                                    || (stair.direction == Direction.Left && player.Y + 58 == stair.Y + stair.GetBounds().Height))
-                                    && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
-                                {
-                                    player.actionBubble.setAction(ActionBubble.BubbleAction.Stair, false);
-                                    player.interactor = (IInteractable)obj;
-                                    player.actionBubble.show();
-                                }
-                            }
-                            if (player.state == Boy.BoyState.StairsLeft || player.state == Boy.BoyState.StairsRight)
-                            {
-                                if (stair.direction == Direction.Left)
-                                {
-                                    if ((player.direction == Direction.Left && (int)player.Y + 58 == stair.getSmallBounds().Y)
-                                        || (player.direction == Direction.Right && (int)player.Y + 58 == stair.Y + stair.GetBounds().Height))
-                                    {
-                                        player.state = Boy.BoyState.Walk;
-                                    }
-                                }
-                                if (stair.direction == Direction.Right)
-                                {
-                                    if ((player.direction == Direction.Right && (int)player.Y + 58 == stair.getSmallBounds().Y)
-                                        || (player.direction == Direction.Left && (int)player.Y + 58 == stair.Y + stair.GetBounds().Height))
-                                    {
-                                        player.state = Boy.BoyState.Walk;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (obj is Chairs)
-                {
-                    Chairs chair = (Chairs)obj;
-                    if (chair.state == Chairs.ChairsState.Falling)
-                    {
-                        foreach (ICollideable c in collideableObjs)
-                        {
-                            if (c is Floor)
-                            {
-                                if (collides(c.GetBounds(), chair.GetBounds()))
-                                {
-                                    while (collides(c.GetBounds(), chair.GetBounds()))
-                                        chair.Y--;
-                                    chair.state = Chairs.ChairsState.Idle;
-                                    soundPos = new Vector2(chair.X, chair.Y);
-
-                                    if (GameTitle.toggleSound)
-                                    {
-                                        soundMan.playSound("Chair Drop");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (obj is Wardrobe)
-                {
-                    Wardrobe wardrobe = (Wardrobe)obj;
-                    if (wardrobe.state == Wardrobe.WardrobeState.Opening)
-                        soundPos = new Vector2(wardrobe.X + wardrobe.GetBounds().Width / 2, wardrobe.Y + wardrobe.GetBounds().Height / 2);
-                    if (colliding && player.X + (player.direction == Direction.Left ? 8 : 32) > wardrobe.X)
-                    {
-                        bool negated = false;
-                        if (collides(wardrobe.enterBox, player.GetBounds()))
-                        {
-                            Wardrobe linkedWR = wardrobe.getLinkedWR();
-                            if (wardrobe.isLocked() || linkedWR == null
-                                || linkedWR.isLocked() || collidingWithSolid(linkedWR.enterBox))
-                                negated = true;
-                            if (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk)
-                            {
-                                player.actionBubble.setAction(ActionBubble.BubbleAction.Wardrobe, negated);
-                                player.actionBubble.show();
-                                if (!negated)
-                                    player.interactor = (IInteractable)obj;
-                            }
-                        }
-                        else
-                        {
-                            negated = collidingWithSolid(wardrobe.GetBounds(), false);
-                            if (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk)
-                            {
-                                player.actionBubble.setAction(ActionBubble.BubbleAction.Push, negated);
-                                player.actionBubble.show();
-                                if (!negated)
-                                    player.interactor = (IInteractable)obj;
-                            }
-                        }
-                    }
-                }
-                else if (obj is Bookcases)
-                {
-                    Bookcases bookcase = (Bookcases)obj;
-                    if (colliding && bookcase.state == Bookcases.BookcasesState.Open)
-                    {
-                        player.actionBubble.setAction(ActionBubble.BubbleAction.Bookcase, false);
-                        player.actionBubble.show();
-                        player.interactor = (IInteractable)obj;
-                    }
-                }
-                else if (obj is Portrait)
-                {
-                    Portrait painting = (Portrait)obj;
-                    if (!painting.wasMoved || painting.inTime == timePeriod)
-                    {
-                        if (colliding && player.X + player.Width - 10 > painting.X && (player.state == Boy.BoyState.Idle || player.state == Boy.BoyState.Walk))
-                        {
-                            bool negated = false;
-                            if (painting.sendTime == TimePeriod.FarPast)
-                                player.actionBubble.setAction(ActionBubble.BubbleAction.OldPortrait, negated);
-                            else
-                                player.actionBubble.setAction(ActionBubble.BubbleAction.Portrait, negated);
-                            player.actionBubble.show();
-                            player.interactor = (IInteractable)obj;
-                        }
-                    }
-                }
-                else if (obj is Floor)
-                {
-                    if (player.state != Boy.BoyState.StairsLeft && player.state != Boy.BoyState.StairsRight)
-                    {
-                        Floor floor = (Floor)obj;
-                        while (collides(player.GetBounds(), floor.GetBounds()))
-                        {
-                            player.Y--;
-                        }
-                    }
-                }
-                else if (obj is Doors)
-                {
-                    Doors door = (Doors)obj;
-                    if (door.isLocked())
-                    {
-                        if (colliding && player.state == Boy.BoyState.Walk)
-                        {
-                            if ((player.direction == Direction.Left && player.X > door.GetBounds().X)
-                                || (player.direction == Direction.Right && player.X < door.GetBounds().X))
-                                player.state = Boy.BoyState.PushingStill;
-                        }
-                    }
-                }
-                else
-                {
-                    if (!player.actionBubble.isVisible() && !(player.interactor is Wardrobe && (player.state == Boy.BoyState.PushingStill || player.state == Boy.BoyState.PushWalk)))
-                        player.interactor = null;
-                    ICollideable collider = (ICollideable)obj;
-                    if (colliding && player.state == Boy.BoyState.Walk && collider.IsSolid())
-                    {
-                        if ((player.direction == Direction.Left && player.X > collider.GetBounds().X)
-                            || (player.direction == Direction.Right && player.X < collider.GetBounds().X))
-                            player.state = Boy.BoyState.PushingStill;
-                    }
-                }
-            }
-            if (soundTriggered)
-                soundPos = new Vector2();
-            if (!collides(player.GetBounds(), new Rectangle(0, 0, level.Width, level.Height)))
-            {
-                if (nextLevel())
-                {
-                    GameTitle.levelName = level.name;
-                    initLevel(true);
-                }
-                else
-                {
-                    //TODO: CHANGE THIS STUFF
-                    goToLevel("Level1");
-                    initLevel(false);
-                    state = GameState.MainMenu;
-                }
+                //TODO: CHANGE THIS STUFF
+                GoToLevel("Level1");
+                InitLevel(false);
+                State = GameState.MainMenu;
             }
         }
 
-        public void drawObjs(SpriteBatch renderer)
+        private void UpdatePortrait(Portrait portrait, bool colliding)
+        {
+            if (portrait.WasMoved && portrait.InTime != TimePeriod || !colliding ||
+                !(Player.X + Player.Width - 10 > portrait.X) ||
+                Player.State != Boy.BoyState.Idle && Player.State != Boy.BoyState.Walk) return;
+
+            Player.ActionBubble.SetAction(
+                portrait.SendTime == TimePeriod.FarPast
+                    ? ActionBubble.BubbleAction.OldPortrait
+                    : ActionBubble.BubbleAction.Portrait, false);
+            Player.ActionBubble.Show();
+            Player.Interactor = portrait;
+        }
+
+        private void UpdateChair(Chair chair)
+        {
+            if (chair.State != Chair.ChairsState.Falling) return;
+
+            foreach (var c in _collideableObjs.OfType<Floor>().Where(c => Collides(c.GetBounds(), chair.GetBounds())))
+            {
+                while (Collides(c.GetBounds(), chair.GetBounds()))
+                    chair.Y--;
+                chair.State = Chair.ChairsState.Idle;
+                _soundPos = new Vector2(chair.X, chair.Y);
+
+                _soundMan.PlaySound("Chair Drop");
+            }
+        }
+
+        private void UpdateWardrobe(Wardrobe wardrobe, bool colliding)
+        {
+            if (wardrobe.State == Wardrobe.WardrobeState.Opening)
+                _soundPos = new Vector2(wardrobe.X + wardrobe.GetBounds().Width / 2,
+                    wardrobe.Y + wardrobe.GetBounds().Height / 2);
+            if (!colliding || !(Player.X + (Player.Direction == Direction.Left ? 8 : 32) > wardrobe.X))
+                return;
+
+            bool negated;
+            if (Collides(wardrobe.EnterBox, Player.GetBounds()))
+            {
+                var linkedWr = wardrobe.GetLinkedWr();
+                negated = wardrobe.IsLocked() || !linkedWr?.IsLocked() != true || CollidingWithSolid(linkedWr.EnterBox);
+                if (Player.State != Boy.BoyState.Idle && Player.State != Boy.BoyState.Walk) return;
+
+                Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Wardrobe, negated);
+            }
+            else
+            {
+                negated = CollidingWithSolid(wardrobe.GetBounds(), false);
+                if (Player.State != Boy.BoyState.Idle && Player.State != Boy.BoyState.Walk) return;
+
+                Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Push, negated);
+            }
+
+            Player.ActionBubble.Show();
+            if (!negated)
+                Player.Interactor = wardrobe;
+        }
+
+        private void UpdateStairs(Stairs stair, bool colliding)
+        {
+            if (!stair.IsSolid() || !colliding) return;
+
+            if (Player.X + 30 >= stair.X && Player.X + 8 <= stair.X)
+            {
+                if ((stair.Direction == Direction.Left && Math.Abs(Player.Y + 58 - stair.GetSmallBounds().Y) <= 0
+                     || stair.Direction == Direction.Right &&
+                     Math.Abs(Player.Y + 58 - (stair.Y + stair.GetBounds().Height)) <= 0)
+                    && (Player.State == Boy.BoyState.Idle || Player.State == Boy.BoyState.Walk))
+                {
+                    Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Stair, false);
+                    Player.Interactor = stair;
+                    Player.ActionBubble.Show();
+                }
+            }
+            else if (Player.X + 30 >= stair.X + stair.GetBounds().Width && Player.X + 8 <= stair.X + stair.GetBounds().Width)
+            {
+                if ((stair.Direction == Direction.Right && Math.Abs(Player.Y + 58 - stair.GetSmallBounds().Y) <= 0
+                     || stair.Direction == Direction.Left &&
+                     Math.Abs(Player.Y + 58 - (stair.Y + stair.GetBounds().Height)) <= 0)
+                    && (Player.State == Boy.BoyState.Idle || Player.State == Boy.BoyState.Walk))
+                {
+                    Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Stair, false);
+                    Player.Interactor = stair;
+                    Player.ActionBubble.Show();
+                }
+            }
+
+            if (Player.State != Boy.BoyState.StairsLeft && Player.State != Boy.BoyState.StairsRight)
+                return;
+
+            switch (stair.Direction)
+            {
+                case Direction.Left:
+                    if (Player.Direction == Direction.Left && (int) Player.Y + 58 == stair.GetSmallBounds().Y
+                        || Player.Direction == Direction.Right && (int) Player.Y + 58 == stair.Y + stair.GetBounds().Height)
+                        Player.State = Boy.BoyState.Walk;
+                    break;
+                case Direction.Right:
+                    if (Player.Direction == Direction.Right && (int) Player.Y + 58 == stair.GetSmallBounds().Y
+                        || Player.Direction == Direction.Left && (int) Player.Y + 58 == stair.Y + stair.GetBounds().Height)
+                        Player.State = Boy.BoyState.Walk;
+                    break;
+                case Direction.Up:
+                    break;
+                case Direction.Down:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void UpdateShadow(Shadows shadow, bool colliding)
+        {
+            if (_soundTriggered && TimePeriod == TimePeriod.Present && _soundPos.Y >= shadow.Y && _soundPos.Y <= shadow.Y + 81)
+                shadow.StalkNoise((int) _soundPos.X, (int) _soundPos.Y);
+
+            if (!colliding || TimePeriod != TimePeriod.Present || Player.State == Boy.BoyState.StairsLeft ||
+                Player.State == Boy.BoyState.StairsRight) return;
+
+            Player.Direction = shadow.X > Player.X ? Direction.Right : Direction.Left;
+            Player.State = Boy.BoyState.Die;
+
+            _soundMan.PlaySound("Death");
+            shadow.State = Shadows.ShadowState.Idle;
+        }
+
+        public void DrawObjs(SpriteBatch renderer)
         {
 
-            if (showingDialogue)
+            if (_showingDialogue)
             {
-                Vector2 textDim = Game1.GameFont.MeasureString(dialogue);
-                Vector2 drawPos = new Vector2();
-                drawPos.X = camera.X + (camera.Width / 2) / camera.scale - textDim.X / 2;
-                drawPos.Y = camera.Y + camera.Height / camera.scale - textDim.Y - 10;
-                renderer.DrawString(Game1.GameFont, dialogue, drawPos, Color.White);
+                var textDim = Game1.GameFont.MeasureString(_dialogue);
+                renderer.DrawString(Game1.GameFont, _dialogue, new Vector2
+                {
+                    X = Camera.X + Camera.Width / 2f / Camera.Scale - textDim.X / 2,
+                    Y = Camera.Y + Camera.Height / Camera.Scale - textDim.Y - 10
+                }, Color.White);
             }
-            Color tint = Color.White;
-            if (timePeriod == TimePeriod.Past)
+            var tint = Color.White;
+            switch (TimePeriod)
             {
-                tint = Color.White;
-                tint.A = 32;
+                case TimePeriod.Past:
+                    tint.A = 32;
+                    break;
+                case TimePeriod.FarPast:
+                    tint.A = 4;
+                    break;
+                case TimePeriod.Present:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            else if (timePeriod == TimePeriod.FarPast)
-            {
-                tint = Color.White;
-                tint.A = 4;
-            }
-            foreach (IDrawable obj in drawableObjs)
-            {
-                obj.Draw(renderer, tint);
-            }
+            foreach (var obj in _drawableObjs) obj.Draw(renderer, tint);
 
-            player.Draw(renderer, tint);
+            Player.Draw(renderer, tint);
 
         }
 
-        public bool collides(Rectangle box1, Rectangle box2)
+        private static bool Collides(Rectangle box1, Rectangle box2)
         {
-            Rectangle i = Rectangle.Intersect(box1, box2);
+            var i = Rectangle.Intersect(box1, box2);
                 return i.Width != 0;
         }
 
-        public void addObject(Object obj)
+        private void AddObject(object obj)
         {
-            if (obj is IDrawable)
-            {
-                drawableObjs.Add((IDrawable)obj);
-            }
-            if (obj is Updatable)
-            {
-                updatableObjs.Add((Updatable)obj);
-            }
-            if (obj is ICollideable)
-            {
-                collideableObjs.Add((ICollideable)obj);
-            }
-
+            if (obj is IDrawable drawable) _drawableObjs.Add(drawable);
+            if (obj is IUpdatable updatable) _updatableObjs.Add(updatable);
+            if (obj is ICollideable collideable) _collideableObjs.Add(collideable);
         }
 
-        public bool collidingWithSolid(Rectangle box)
+        public bool CollidingWithSolid(Rectangle box, bool includePlayer = true)
         {
-            return collidingWithSolid(box, true);
+            return _collideableObjs.Where(col => includePlayer || !(col is Boy)).Where(col => !(col is Stairs)).Any(col => col.IsSolid() && Collides(box, col.GetBounds()));
         }
 
-        public bool collidingWithSolid(Rectangle box, bool includePlayer)
+        public void ShowDialogue(string text)
         {
-            foreach (ICollideable col in collideableObjs)
-            {
-                if (!includePlayer && col is Boy)
-                    continue;
-                if (col is Stairs)
-                    continue;
-                if (col.IsSolid() && collides(box, col.GetBounds()))
-                {
-                    return true;
-                }
-            }
-            return false;
+            _showingDialogue = true;
+            _dialogue = text;
         }
 
-        public void showDialogue(string text)
+        public void HideDialogue()
         {
-            showingDialogue = true;
-            dialogue = text;
-        }
-
-        public void hideDialogue()
-        {
-            if (dialogueTimer >= 3000)
-                showingDialogue = false;
+            if (_dialogueTimer >= 3000)
+                _showingDialogue = false;
         }
     }
 }

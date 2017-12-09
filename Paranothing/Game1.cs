@@ -10,8 +10,9 @@ namespace Paranothing
 {
     internal enum GameState { MainMenu, Game }
 
-    public enum Direction { Left, Right, Up, Down }
-    public enum TimePeriod { FarPast, Past, Present }
+    internal enum Direction { Left, Right, Up, Down }
+
+    internal enum TimePeriod { FarPast, Past, Present }
 
     internal struct DrawLayer {
         internal const float ActionBubble = 0.01f;
@@ -93,9 +94,9 @@ namespace Paranothing
 
         private Texture2D _controller;
 
-        private readonly GameController _control = GameController.getInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.getInstance();
-        private readonly SoundManager _soundMan = SoundManager.getInstance();
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
 
         private const int ScreenWidth = 1280;
         private const int ScreenHeight = 720;
@@ -126,7 +127,7 @@ namespace Paranothing
 
         public GameState GameState
         {
-            set => _control.state = value;
+            set => _control.State = value;
         }
 
         /// <summary>
@@ -161,14 +162,14 @@ namespace Paranothing
             GameFont = Content.Load<SpriteFont>("GameFont");
             MenuFont = Content.Load<SpriteFont>("GameFont");
             _title = new GameTitle(Content.Load<Texture2D>("screenshot_for_menu"), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
-            _title.setBottomTextRectangle(GameFont.MeasureString("Press Start"));
+            _title.SetBottomTextRectangle(GameFont.MeasureString("Press Start"));
             _startPosition = new Vector2(_title.BottomTextRectangle.X, _title.BottomTextRectangle.Y);
         }
         private void DrawTitleText()
         {
-            _title.setTopTextRectangle(_titleFont.MeasureString("Paranothing"));
+            _title.SetTopTextRectangle(_titleFont.MeasureString("Paranothing"));
             DrawText("Paranothing", _titleFont, Color.WhiteSmoke, _title.TopTextRectangle.X, _title.TopTextRectangle.Y);
-            if (_title.titleState == GameTitle.TitleState.Title)
+            if (_title.State == GameTitle.TitleState.Title)
                 _spriteBatch.DrawString(GameFont, "Press Start", _startPosition, Color.White);
         }
 
@@ -190,7 +191,7 @@ namespace Paranothing
         /// </summary>
         protected override void LoadContent()
         {
-            _control.state = GameState.MainMenu;
+            _control.State = GameState.MainMenu;
 
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -229,125 +230,125 @@ namespace Paranothing
 
             _wallpaperTex = Content.Load<Texture2D>("Sprites/Wallpaper");
             _wallpaperSheet = new SpriteSheet(_wallpaperTex);
-            _wallpaperSheet.splitSheet(1, 2);
+            _wallpaperSheet.SplitSheet(1, 2);
 
             _wardrobeTex = Content.Load<Texture2D>("Sprites/wardrobe");
             _wardrobeSheet = new SpriteSheet(_wardrobeTex);
-            _wardrobeSheet.splitSheet(1, 5);
-            _wardrobeSheet.addAnimation("wardrobeclosed", new[] { 0 });
-            _wardrobeSheet.addAnimation("wardrobeopening", new[] { 1, 2, 3 });
-            _wardrobeSheet.addAnimation("wardrobeopen", new[] { 4 });
+            _wardrobeSheet.SplitSheet(1, 5);
+            _wardrobeSheet.AddAnimation("wardrobeclosed", new[] { 0 });
+            _wardrobeSheet.AddAnimation("wardrobeopening", new[] { 1, 2, 3 });
+            _wardrobeSheet.AddAnimation("wardrobeopen", new[] { 4 });
 
             //Portrait
             _portraitTex = Content.Load<Texture2D>("Sprites/portrait");
             _portraitSheet = new SpriteSheet(_portraitTex);
-            _portraitSheet.splitSheet(2, 1);
+            _portraitSheet.SplitSheet(2, 1);
 
             _rubbleTex = Content.Load<Texture2D>("Sprites/rubble");
             _rubbleSheet = new SpriteSheet(_rubbleTex);
-            _rubbleSheet.addSprite(0, 0, 37, 28);
+            _rubbleSheet.AddSprite(0, 0, 37, 28);
 
             _actionTex = Content.Load<Texture2D>("Sprites/actions");
             _actionSheet = new SpriteSheet(_actionTex);
-            _actionSheet.splitSheet(3, 3);
-            _actionSheet.addAnimation("bubble", new[] { 0 });
-            _actionSheet.addAnimation("wardrobe", new[] { 1 });
-            _actionSheet.addAnimation("push", new[] { 2 });
-            _actionSheet.addAnimation("chair", new[] { 3 });
-            _actionSheet.addAnimation("stair", new[] { 4 });
-            _actionSheet.addAnimation("portrait", new[] { 5 });
-            _actionSheet.addAnimation("oldportrait", new[] { 6 });
-            _actionSheet.addAnimation("bookcase", new[] { 7 });
-            _actionSheet.addAnimation("negate", new[] { 8 });
+            _actionSheet.SplitSheet(3, 3);
+            _actionSheet.AddAnimation("bubble", new[] { 0 });
+            _actionSheet.AddAnimation("wardrobe", new[] { 1 });
+            _actionSheet.AddAnimation("push", new[] { 2 });
+            _actionSheet.AddAnimation("chair", new[] { 3 });
+            _actionSheet.AddAnimation("stair", new[] { 4 });
+            _actionSheet.AddAnimation("portrait", new[] { 5 });
+            _actionSheet.AddAnimation("oldportrait", new[] { 6 });
+            _actionSheet.AddAnimation("bookcase", new[] { 7 });
+            _actionSheet.AddAnimation("negate", new[] { 8 });
 
             _boyTex = Content.Load<Texture2D>("Sprites/BruceSheet");
             _boySheet = new SpriteSheet(_boyTex);
-            _boySheet.splitSheet(7, 9, 0, 0, 58);
-            _boySheet.addAnimation("walk", new[] { 0, 1, 2, 3, 4, 5, 6, 7 });
-            _boySheet.addAnimation("stand", new[] { 8 });
-            _boySheet.addAnimation("leavewardrobe", new[] { 9, 10, 11, 12, 13, 14, 15, 16 });
-            _boySheet.addAnimation("enterwardrobe", new[] { 18, 19, 20, 21, 22, 23, 24, 25 });
-            _boySheet.addAnimation("enterportrait", new[] { 27, 28, 29, 30, 31, 32, 33, 34 });
-            _boySheet.addAnimation("leaveportrait", new[] { 34, 33, 32, 31, 30, 29, 28, 27 });
-            _boySheet.addAnimation("startpush", new[] { 36, 37, 38, 39 });
-            _boySheet.addAnimation("endpush", new[] { 39, 38, 37, 36 });
-            _boySheet.addAnimation("push", new[] { 41, 42, 43, 44, 45, 46, 47, 48 });
-            _boySheet.addAnimation("pushstill", new[] { 49 });
-            _boySheet.addAnimation("controlstart", new[] { 50, 51, 52 });
-            _boySheet.addAnimation("control", new[] { 53 });
-            _boySheet.addAnimation("controlend", new[] { 52, 51, 50 });
-            _boySheet.addAnimation("disappear", new[] { 50, 51, 52, 53, 54, 55, 56, 57 });
+            _boySheet.SplitSheet(7, 9, 0, 0, 58);
+            _boySheet.AddAnimation("walk", new[] { 0, 1, 2, 3, 4, 5, 6, 7 });
+            _boySheet.AddAnimation("stand", new[] { 8 });
+            _boySheet.AddAnimation("leavewardrobe", new[] { 9, 10, 11, 12, 13, 14, 15, 16 });
+            _boySheet.AddAnimation("enterwardrobe", new[] { 18, 19, 20, 21, 22, 23, 24, 25 });
+            _boySheet.AddAnimation("enterportrait", new[] { 27, 28, 29, 30, 31, 32, 33, 34 });
+            _boySheet.AddAnimation("leaveportrait", new[] { 34, 33, 32, 31, 30, 29, 28, 27 });
+            _boySheet.AddAnimation("startpush", new[] { 36, 37, 38, 39 });
+            _boySheet.AddAnimation("endpush", new[] { 39, 38, 37, 36 });
+            _boySheet.AddAnimation("push", new[] { 41, 42, 43, 44, 45, 46, 47, 48 });
+            _boySheet.AddAnimation("pushstill", new[] { 49 });
+            _boySheet.AddAnimation("controlstart", new[] { 50, 51, 52 });
+            _boySheet.AddAnimation("control", new[] { 53 });
+            _boySheet.AddAnimation("controlend", new[] { 52, 51, 50 });
+            _boySheet.AddAnimation("disappear", new[] { 50, 51, 52, 53, 54, 55, 56, 57 });
 
             _shadowTex = Content.Load<Texture2D>("Sprites/Shadow");
             _shadowSheet = new SpriteSheet(_shadowTex);
-            _shadowSheet.splitSheet(1, 4);
-            _shadowSheet.addAnimation("walk", new[] { 0, 1, 2 });
-            _shadowSheet.addAnimation("stopwalk", new[] { 2, 1, 0 });
-            _shadowSheet.addAnimation("stand", new[] { 3 });
+            _shadowSheet.SplitSheet(1, 4);
+            _shadowSheet.AddAnimation("walk", new[] { 0, 1, 2 });
+            _shadowSheet.AddAnimation("stopwalk", new[] { 2, 1, 0 });
+            _shadowSheet.AddAnimation("stand", new[] { 3 });
 
             _floorTex = Content.Load<Texture2D>("Sprites/floor");
             _floorSheet = new SpriteSheet(_floorTex);
-            _floorSheet.splitSheet(2, 1);
+            _floorSheet.SplitSheet(2, 1);
 
             _wallTex = Content.Load<Texture2D>("Sprites/wall");
             _wallSheet = new SpriteSheet(_wallTex);
-            _wallSheet.splitSheet(1, 2);
+            _wallSheet.SplitSheet(1, 2);
 
             _stairTex = Content.Load<Texture2D>("Sprites/Staircase");
             _stairSheet = new SpriteSheet(_stairTex);
-            _stairSheet.splitSheet(1, 2);
+            _stairSheet.SplitSheet(1, 2);
 
             _doorTex = Content.Load<Texture2D>("Sprites/door");
             _doorSheet = new SpriteSheet(_doorTex);
-            _doorSheet.splitSheet(2, 3);
-            _doorSheet.addAnimation("doorclosedpast", new[] { 0 });
-            _doorSheet.addAnimation("dooropeningpast", new[] { 1 });
-            _doorSheet.addAnimation("dooropenpast", new[] { 2 });
-            _doorSheet.addAnimation("doorclosedpresent", new[] { 3 });
-            _doorSheet.addAnimation("dooropeningpresent", new[] { 4 });
-            _doorSheet.addAnimation("dooropenpresent", new[] { 5 });
+            _doorSheet.SplitSheet(2, 3);
+            _doorSheet.AddAnimation("doorclosedpast", new[] { 0 });
+            _doorSheet.AddAnimation("dooropeningpast", new[] { 1 });
+            _doorSheet.AddAnimation("dooropenpast", new[] { 2 });
+            _doorSheet.AddAnimation("doorclosedpresent", new[] { 3 });
+            _doorSheet.AddAnimation("dooropeningpresent", new[] { 4 });
+            _doorSheet.AddAnimation("dooropenpresent", new[] { 5 });
 
             //Old Portrait
             _oldPortraitTex = Content.Load<Texture2D>("Sprites/PortraitWoman");
             _oldPortraitSheet = new SpriteSheet(_oldPortraitTex);
-            _oldPortraitSheet.splitSheet(2, 1);
+            _oldPortraitSheet.SplitSheet(2, 1);
 
             _keyTex = Content.Load<Texture2D>("Sprites/Key");
             _keySheet = new SpriteSheet(_keyTex);
-            _keySheet.splitSheet(2, 1);
+            _keySheet.SplitSheet(2, 1);
 
             _chairTex = Content.Load<Texture2D>("Sprites/chair");
             _chairSheet = new SpriteSheet(_chairTex);
-            _chairSheet.splitSheet(1, 2);
+            _chairSheet.SplitSheet(1, 2);
 
             _finalDoorTex = Content.Load<Texture2D>("Sprites/door_final");
             _finalDoorSheet = new SpriteSheet(_finalDoorTex);
-            _finalDoorSheet.splitSheet(1, 7);
-            _finalDoorSheet.addAnimation("bookcaseclosed", new[] { 0 });
-            _finalDoorSheet.addAnimation("bookcaseopening", new[] { 1, 2, 3, 4, 5 });
-            _finalDoorSheet.addAnimation("bookcaseclosing", new[] { 5, 4, 3, 2, 1 });
-            _finalDoorSheet.addAnimation("bookcaseopen", new[] { 6 });
+            _finalDoorSheet.SplitSheet(1, 7);
+            _finalDoorSheet.AddAnimation("bookcaseclosed", new[] { 0 });
+            _finalDoorSheet.AddAnimation("bookcaseopening", new[] { 1, 2, 3, 4, 5 });
+            _finalDoorSheet.AddAnimation("bookcaseclosing", new[] { 5, 4, 3, 2, 1 });
+            _finalDoorSheet.AddAnimation("bookcaseopen", new[] { 6 });
 
             _buttonTex = Content.Load<Texture2D>("Sprites/button");
             _buttonSheet = new SpriteSheet(_buttonTex);
-            _buttonSheet.splitSheet(1, 2);
+            _buttonSheet.SplitSheet(1, 2);
 
-            _sheetMan.addSheet("wallpaper", _wallpaperSheet);
-            _sheetMan.addSheet("wardrobe", _wardrobeSheet);
-            _sheetMan.addSheet("portrait", _portraitSheet);
-            _sheetMan.addSheet("rubble", _rubbleSheet);
-            _sheetMan.addSheet("action", _actionSheet);
-            _sheetMan.addSheet("boy", _boySheet);
-            _sheetMan.addSheet("floor", _floorSheet);
-            _sheetMan.addSheet("wall", _wallSheet);
-            _sheetMan.addSheet("stair", _stairSheet);
-            _sheetMan.addSheet("door", _doorSheet);
-            _sheetMan.addSheet("oldportrait", _oldPortraitSheet);
-            _sheetMan.addSheet("key", _keySheet);
-            _sheetMan.addSheet("chair", _chairSheet);
-            _sheetMan.addSheet("bookcase", _finalDoorSheet);
-            _sheetMan.addSheet("button", _buttonSheet);
-            _sheetMan.addSheet("shadow", _shadowSheet);
+            _sheetMan.AddSheet("wallpaper", _wallpaperSheet);
+            _sheetMan.AddSheet("wardrobe", _wardrobeSheet);
+            _sheetMan.AddSheet("portrait", _portraitSheet);
+            _sheetMan.AddSheet("rubble", _rubbleSheet);
+            _sheetMan.AddSheet("action", _actionSheet);
+            _sheetMan.AddSheet("boy", _boySheet);
+            _sheetMan.AddSheet("floor", _floorSheet);
+            _sheetMan.AddSheet("wall", _wallSheet);
+            _sheetMan.AddSheet("stair", _stairSheet);
+            _sheetMan.AddSheet("door", _doorSheet);
+            _sheetMan.AddSheet("oldportrait", _oldPortraitSheet);
+            _sheetMan.AddSheet("key", _keySheet);
+            _sheetMan.AddSheet("chair", _chairSheet);
+            _sheetMan.AddSheet("bookcase", _finalDoorSheet);
+            _sheetMan.AddSheet("button", _buttonSheet);
+            _sheetMan.AddSheet("shadow", _shadowSheet);
 
             _actionBubble = new ActionBubble();
             _player = new Boy(254, 240, _actionBubble);
@@ -357,18 +358,16 @@ namespace Paranothing
             _level2 = new Level("levels/level2.lvl");
             _level3 = new Level("levels/level3.lvl");
             _level4 = new Level("levels/level4.lvl");
-            _control.addLevel(_tutorial);
-            _control.addLevel(_level1);
-            _control.addLevel(_level2);
-            _control.addLevel(_level3);
-            _control.addLevel(_level4);
-            _control.goToLevel("Tutorial");
+            _control.AddLevel(_tutorial);
+            _control.AddLevel(_level1);
+            _control.AddLevel(_level2);
+            _control.AddLevel(_level3);
+            _control.AddLevel(_level4);
+            _control.GoToLevel("Tutorial");
 
-            GameTitle.levelName = "Tutorial";
-
-            _control.setPlayer(_player);
-            _control.setCamera(camera);
-            _control.initLevel(false);
+            _control.SetPlayer(_player);
+            _control.SetCamera(camera);
+            _control.InitLevel(false);
 
             _controller = Content.Load<Texture2D>("controller");
 
@@ -385,9 +384,9 @@ namespace Paranothing
 
             var camera = new Camera(0, 360, 1280, 720, 2.0f);
 
-            _control.setPlayer(_player);
-            _control.setCamera(camera);
-            _control.initLevel(false);
+            _control.SetPlayer(_player);
+            _control.SetCamera(camera);
+            _control.InitLevel(false);
 
             _fadeOpacity = 0;
 
@@ -413,11 +412,11 @@ namespace Paranothing
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            if ((Keyboard.GetState().IsKeyDown(Keys.Pause) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.Start)) && _control.state == GameState.Game)
+            if ((Keyboard.GetState().IsKeyDown(Keys.P) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.Start)) && _control.State == GameState.Game)
             {
-                _control.state = GameState.MainMenu;
-                _title.titleState = GameTitle.TitleState.Pause;
-                _title.menuSize = 4;
+                _control.State = GameState.MainMenu;
+                _title.State = GameTitle.TitleState.Pause;
+                _title.MenuSize = 4;
             }
 
             if (EndGame)
@@ -433,9 +432,9 @@ namespace Paranothing
                 {
                     EndGame = false;
                     _stopwatch.Reset();
-                    _control.state = GameState.MainMenu;
-                    _title.titleState = GameTitle.TitleState.Menu;
-                    _title.menuSize = 5;
+                    _control.State = GameState.MainMenu;
+                    _title.State = GameTitle.TitleState.Menu;
+                    _title.MenuSize = 5;
                     GameInProgress = false;
                 }
             }
@@ -443,7 +442,7 @@ namespace Paranothing
             //FADE OUT UPDATE
             else
             {
-                switch (_control.state)
+                switch (_control.State)
                 {
                     case GameState.MainMenu:
                         EndGame = false;
@@ -454,7 +453,7 @@ namespace Paranothing
 
                         GameInProgress = true;
 
-                        _control.updateObjs(gameTime);
+                        _control.UpdateObjs(gameTime);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -472,14 +471,14 @@ namespace Paranothing
         {
             GraphicsDevice.Clear(new Color(20,20,20));
 
-            switch (_control.state)
+            switch (_control.State)
             {
                 case GameState.MainMenu:
                     _spriteBatch.Begin();
                     _title.Draw(_spriteBatch);
                     DrawTitleText();
 
-                    if (_title.titleState == GameTitle.TitleState.Controls)
+                    if (_title.State == GameTitle.TitleState.Controls)
                         _spriteBatch.Draw(_controller, new Rectangle(200, 180, 500, 500), Color.White);
                     break;
                 case GameState.Game:
@@ -487,11 +486,11 @@ namespace Paranothing
                     //if (control.timePeriod != TimePeriod.Present)
                     //    pastEffect = greyScale;
                     var transform = Matrix.Identity;
-                    transform *= Matrix.CreateTranslation(-_control.camera.X, -_control.camera.Y, 0);
-                    transform *= Matrix.CreateScale(_control.camera.scale);
+                    transform *= Matrix.CreateTranslation(-_control.Camera.X, -_control.Camera.Y, 0);
+                    transform *= Matrix.CreateScale(_control.Camera.Scale);
                     _spriteBatch.Begin(SpriteSortMode.BackToFront, null, SamplerState.PointWrap, null, null, pastEffect, transform);
                     DrawWallpaper(_spriteBatch, _wallpaperSheet);
-                    _control.drawObjs(_spriteBatch);
+                    _control.DrawObjs(_spriteBatch);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -518,48 +517,44 @@ namespace Paranothing
 
         private void DrawWallpaper(SpriteBatch spriteBatch, SpriteSheet wallpaper)
         {
-            var paperBounds = wallpaper.getSprite(0);
-            var paperColor = _control.level.wallpaperColor;
-            if (_control.timePeriod == TimePeriod.Past)
+            var paperBounds = wallpaper.GetSprite(0);
+            var paperColor = _control.Level.WallpaperColor;
+            if (_control.TimePeriod == TimePeriod.Past)
                 paperColor.A = 16;
             var startX = -paperBounds.Width;
-            var xCount = _control.level.Width / paperBounds.Height + 2;
-            int startY = (int)(Math.Floor((float)-_control.camera.Y / paperBounds.Height)) * paperBounds.Height;
-            int yCount = _control.level.Height / paperBounds.Height + 1;
+            var xCount = _control.Level.Width / paperBounds.Height + 2;
+            var startY = (int)(Math.Floor((float)-_control.Camera.Y / paperBounds.Height)) * paperBounds.Height;
+            var yCount = _control.Level.Height / paperBounds.Height + 1;
                // float minZ = (float)Math.Floor(ball.Z / 10) * 10.0f - 10;
-            for (int drawX = 0; drawX < xCount; drawX++)
-            {
-                for (int drawY = 0; drawY < yCount; drawY++)
+            for (var drawX = 0; drawX < xCount; drawX++)
+                for (var drawY = 0; drawY < yCount; drawY++)
                 {
-                    Rectangle drawRect = new Rectangle(drawX * paperBounds.Width + startX, drawY * paperBounds.Height + startY, paperBounds.Width, paperBounds.Height);
-                    Rectangle srcRect = new Rectangle(paperBounds.X, paperBounds.Y, paperBounds.Width, paperBounds.Height);
-                    if ((drawY + 1) * paperBounds.Height + startY > _control.level.Height)
+                    var drawRect = new Rectangle(drawX * paperBounds.Width + startX, drawY * paperBounds.Height + startY, paperBounds.Width, paperBounds.Height);
+                    var srcRect = new Rectangle(paperBounds.X, paperBounds.Y, paperBounds.Width, paperBounds.Height);
+                    if ((drawY + 1) * paperBounds.Height + startY > _control.Level.Height)
                     {
-                        drawRect.Height = _control.level.Height - (drawY * paperBounds.Height + startY);
+                        drawRect.Height = _control.Level.Height - (drawY * paperBounds.Height + startY);
                         srcRect.Height = drawRect.Height;
                     }
-                    spriteBatch.Draw(wallpaper.image, drawRect, srcRect, paperColor, 0f, new Vector2(),SpriteEffects.None, DrawLayer.Wallpaper);
+                    spriteBatch.Draw(wallpaper.Image, drawRect, srcRect, paperColor, 0f, new Vector2(),SpriteEffects.None, DrawLayer.Wallpaper);
                 }
-            }
-            if (_control.timePeriod == TimePeriod.Present)
-            {
-                paperBounds = wallpaper.getSprite(1);
-                //dest = new Rectangle(0, 0, ScreenWidth / 2, ScreenHeight / 2);
-                for (int drawX = 0; drawX < xCount; drawX++)
+
+            if (_control.TimePeriod != TimePeriod.Present) return;
+
+            paperBounds = wallpaper.GetSprite(1);
+            //dest = new Rectangle(0, 0, ScreenWidth / 2, ScreenHeight / 2);
+            for (var drawX = 0; drawX < xCount; drawX++)
+                for (var drawY = 0; drawY < yCount; drawY++)
                 {
-                    for (int drawY = 0; drawY < yCount; drawY++)
+                    var drawRect = new Rectangle(drawX * paperBounds.Width + startX, drawY * paperBounds.Height + startY, paperBounds.Width, paperBounds.Height);
+                    var srcRect = new Rectangle(paperBounds.X, paperBounds.Y, paperBounds.Width, paperBounds.Height);
+                    if ((drawY + 1) * paperBounds.Height + startY > _control.Level.Height)
                     {
-                        Rectangle drawRect = new Rectangle(drawX * paperBounds.Width + startX, drawY * paperBounds.Height + startY, paperBounds.Width, paperBounds.Height);
-                        Rectangle srcRect = new Rectangle(paperBounds.X, paperBounds.Y, paperBounds.Width, paperBounds.Height);
-                        if ((drawY + 1) * paperBounds.Height + startY > _control.level.Height)
-                        {
-                            drawRect.Height = _control.level.Height - (drawY * paperBounds.Height + startY);
-                            srcRect.Height = drawRect.Height;
-                        }
-                        spriteBatch.Draw(wallpaper.image, drawRect, srcRect, Color.White, 0f, new Vector2(), SpriteEffects.None, DrawLayer.WallpaperTears);
+                        drawRect.Height = _control.Level.Height - (drawY * paperBounds.Height + startY);
+                        srcRect.Height = drawRect.Height;
                     }
+                    spriteBatch.Draw(wallpaper.Image, drawRect, srcRect, Color.White, 0f, new Vector2(), SpriteEffects.None, DrawLayer.WallpaperTears);
                 }
-            }
         }
     }
 }

@@ -5,93 +5,82 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class DoorKeys : IDrawable, ICollideable, Saveable, IInteractable
+    internal sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
     {
         # region Attributes
-        private static Dictionary<string, DoorKeys> keyDict = new Dictionary<string, DoorKeys>();
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
+        private static readonly Dictionary<string, DoorKey> KeyDict = new Dictionary<string, DoorKey>();
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
         //Collideable
-        private Vector2 position;
-        private Rectangle bounds { get { return new Rectangle(X, Y, 16, 9); } }
-        //Drawable
-        private SpriteSheet sheet;
-        public bool restrictTime { get; private set; }
-        public TimePeriod inTime { get; private set; }
-        public bool pickedUp;
+        private Vector2 _position;
+        private Rectangle Bounds => new Rectangle(X, Y, 16, 9);
 
-        public string name { get; private set; }
+        //Drawable
+        private readonly SpriteSheet _sheet;
+        public bool RestrictTime { get; }
+        public TimePeriod InTime { get; }
+        public bool PickedUp;
+
+        public string Name { get; }
 
         # endregion
 
         # region Constructor
 
-        public DoorKeys(int X, int Y, string name)
+        public DoorKey(string saveString)
         {
-            this.sheet = sheetMan.getSheet("key");
-            position = new Vector2(X, Y);
-            pickedUp = false;
-            this.name = name;
-            restrictTime = false;
-            inTime = TimePeriod.Present;
-            if (keyDict.ContainsKey(name))
-                keyDict.Remove(name);
-            keyDict.Add(name, this);
-        }
-
-        public DoorKeys(string saveString)
-        {
-            this.sheet = sheetMan.getSheet("key");
-            pickedUp = false;
-            restrictTime = false;
-            inTime = TimePeriod.Present;
+            _sheet = _sheetMan.GetSheet("key");
+            PickedUp = false;
+            RestrictTime = false;
+            InTime = TimePeriod.Present;
             X = 0;
             Y = 0;
-            name = "Key";
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndKey") && lineNum < lines.Length)
+            Name = "Key";
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndKey", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { Y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("restrictTime:"))
+
+                if (line.StartsWith("restrictTime:", StringComparison.Ordinal))
                 {
-                    restrictTime = true;
-                    string t = line.Substring(13).Trim();
-                    if (t == "Present")
-                        inTime = TimePeriod.Present;
-                    else if (t == "Past")
-                        inTime = TimePeriod.Past;
-                    else if (t == "FarPast")
-                        inTime = TimePeriod.FarPast;
-                    else
-                        restrictTime = false;
+                    RestrictTime = true;
+                    var t = line.Substring(13).Trim();
+                    switch (t)
+                    {
+                        case "Present":
+                            InTime = TimePeriod.Present;
+                            break;
+                        case "Past":
+                            InTime = TimePeriod.Past;
+                            break;
+                        case "FarPast":
+                            InTime = TimePeriod.FarPast;
+                            break;
+                        default:
+                            RestrictTime = false;
+                            break;
+                    }
                 }
-                if (line.StartsWith("name:"))
-                {
-                    name = line.Substring(5).Trim();
-                }
-                lineNum++;
+                if (line.StartsWith("name:", StringComparison.Ordinal)) Name = line.Substring(5).Trim();
             }
 
-            if (keyDict.ContainsKey(name))
-                keyDict.Remove(name);
-            keyDict.Add(name, this);
+            if (KeyDict.ContainsKey(Name))
+                KeyDict.Remove(Name);
+            KeyDict.Add(Name, this);
         }
 
-        public void reset()
+        public void Reset()
         {
-            pickedUp = false;
+            PickedUp = false;
         }
 
         # endregion
@@ -99,13 +88,22 @@ namespace Paranothing
         # region Methods
 
         //Accessors & Mutators
-        public int X { get { return (int)position.X; } set { position.X = value; } }
-        public int Y { get { return (int)position.Y; } set { position.Y = value; } }
+        private int X
+        {
+            get => (int)_position.X;
+            set => _position.X = value;
+        }
+
+        private int Y
+        {
+            get => (int)_position.Y;
+            set => _position.Y = value;
+        }
 
         //Collideable
         public Rectangle GetBounds()
         {
-            return bounds;
+            return Bounds;
         }
 
         public bool IsSolid()
@@ -114,23 +112,14 @@ namespace Paranothing
         }
 
         //Drawable
-        public Texture2D getImage()
-        {
-            return sheet.image;
-        }
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            if (!pickedUp)
-            {
-                if (!restrictTime || control.timePeriod == inTime)
-                {
-                    if (control.timePeriod == TimePeriod.Present)
-                        renderer.Draw(sheet.image, bounds, sheet.getSprite(1), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Key);
-                    else
-                        renderer.Draw(sheet.image, bounds, sheet.getSprite(0), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Key);
-                }
-            }
+            if (PickedUp || (RestrictTime && _control.TimePeriod != InTime)) return;
+
+            renderer.Draw(_sheet.Image, Bounds,
+                _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+                new Vector2(), SpriteEffects.None, DrawLayer.Key);
         }
 
         //Interactive
@@ -138,21 +127,16 @@ namespace Paranothing
         {
         }
 
-        public static DoorKeys getKey(string name)
+        public static DoorKey GetKey(string name)
         {
-            DoorKeys k;
-            if (keyDict.ContainsKey(name))
-                keyDict.TryGetValue(name, out k);
+            DoorKey k;
+            if (KeyDict.ContainsKey(name))
+                KeyDict.TryGetValue(name, out k);
             else
                 k = null;
             return k;
         }
 
         #endregion
-
-        public string saveData()
-        {
-            return "StartKey\nx:" + X + "\ny:" + Y + "\nname:" + name + "\nEndKey"; 
-        }
     }
 }

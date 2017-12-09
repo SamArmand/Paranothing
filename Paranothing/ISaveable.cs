@@ -1,8 +1,7 @@
 ﻿namespace Paranothing
 {
-    public interface Saveable
+    public interface ISaveable
     {
-        string saveData();
-        void reset();
+        void Reset();
     }
 }

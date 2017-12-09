@@ -6,107 +6,71 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Doors : ICollideable, Updatable, IDrawable, IInteractable, Lockable, Saveable
+    internal sealed class Door : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
 
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private SoundManager soundMan = SoundManager.getInstance();
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
         //Collidable
-        private Vector2 position;
-        private Rectangle bounds { get { return new Rectangle(X + 25, Y, 8, 75); } }
+        private Vector2 _position;
+        private Rectangle Bounds => new Rectangle(X + 25, Y, 8, 75);
+
         //Drawable
-        private SpriteSheet sheet;
-        private bool startLocked;
-        private bool locked;
-        private int frameTime;
-        private int frameLength;
-        private int frame;
-        private string animName;
-        private List<int> animFrames;
+        private readonly SpriteSheet _sheet;
+        private readonly bool _startLocked;
+        private bool _locked;
+        private int _frameTime;
+        private int _frameLength;
+        private int _frame;
+        private string _animName;
+        private List<int> _animFrames;
         private enum DoorsState { Closed, Opening, Open }
-        private DoorsState state;
-        private string keyName;
+        private DoorsState _state;
+        private readonly string _keyName;
 
         # endregion
 
         # region Constructor
 
-        public Doors(int x, int y, int width, int height, int frameLength, bool startLocked)
+        public Door(string saveString)
         {
-            this.sheet = sheetMan.getSheet("door");
-            position = new Vector2(x, y);
-            locked = startLocked;
-            this.frameLength = frameLength;
-            if (locked)
-            {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "doorclosedpresent";
-                else
-                    Animation = "doorclosed";
-                state = DoorsState.Closed;
-            }
-            else
-            {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "dooropeningpresent";
-                else
-                    Animation = "dooropeningpast";
-                state = DoorsState.Open;
-            }
-        }
-
-        public Doors(string saveString)
-        {
-            this.sheet = sheetMan.getSheet("door");
+            _sheet = _sheetMan.GetSheet("door");
             X = 0;
             Y = 0;
-            startLocked = false;
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndDoor") && lineNum < lines.Length)
+            _startLocked = false;
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndDoor", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { Y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("locked:"))
-                {
-                    try { startLocked = bool.Parse(line.Substring(7)); }
+
+                if (line.StartsWith("locked:", StringComparison.Ordinal))
+                    try { _startLocked = bool.Parse(line.Substring(7)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("keyName:"))
-                {
-                    keyName = line.Substring(8).Trim();
-                }
-                lineNum++;
+
+                if (line.StartsWith("keyName:", StringComparison.Ordinal)) _keyName = line.Substring(8).Trim();
             }
-            locked = startLocked;
-            
-            if (locked)
+            _locked = _startLocked;
+
+            if (_locked)
             {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "doorclosedpresent";
-                else
-                    Animation = "doorclosedpast";
-                state = DoorsState.Closed;
+                Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
+                _state = DoorsState.Closed;
             }
             else
             {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "dooropeningpresent";
-                else
-                    Animation = "dooropeningpast";
-                state = DoorsState.Open;
+                Animation = _control.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
+                _state = DoorsState.Open;
             }
 
         }
@@ -115,148 +79,117 @@ namespace Paranothing
 
         # region Methods
 
-        public void reset()
+        public void Reset()
         {
-            locked = startLocked;
+            _locked = _startLocked;
 
-            if (locked)
+            if (_locked)
             {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "doorclosedpresent";
-                else
-                    Animation = "doorclosedpast";
-                state = DoorsState.Closed;
+                Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
+                _state = DoorsState.Closed;
             }
             else
             {
-                if (control.timePeriod == TimePeriod.Present)
-                    Animation = "dooropeningpresent";
-                else
-                    Animation = "dooropeningpast";
-                state = DoorsState.Open;
+                Animation = _control.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
+                _state = DoorsState.Open;
             }
         }
 
         //Accessors & Mutators
-        public int X
+        private int X
         {
-            get { return (int)position.X; }
-            set { position.X = value; }
+            get => (int)_position.X;
+            set => _position.X = value;
         }
-        public int Y
+
+        private int Y
         {
-            get { return (int)position.Y; }
-            set { position.Y = value; }
+            get => (int)_position.Y;
+            set => _position.Y = value;
         }
-        public string Animation
+
+        private string Animation
         {
-            get { return animName; }
             set
             {
+                if (!_sheet.HasAnimation(value) || _animName == value) return;
 
-                if (sheet.hasAnimation(value) && animName != value)
-                {
-                    animName = value;
-                    animFrames = sheet.getAnimation(animName);
-                    frame = 0;
-                    frameTime = 0;
-                }
+                _animName = value;
+                _animFrames = _sheet.GetAnimation(_animName);
+                _frame = 0;
+                _frameTime = 0;
             }
         }
 
-        //Lockable
-        public void lockObj()
+        private void UnlockObj()
         {
-            locked = true;
+            _locked = false;
+
+            _soundMan.PlaySound("Door Unlock");
         }
 
-        public void unlockObj()
+        public bool IsLocked()
         {
-            locked = false;
-
-            if (GameTitle.toggleSound)
-            {
-                soundMan.playSound("Door Unlock");
-            }
-        }
-
-        public bool isLocked()
-        {
-            return locked;
+            return _locked;
         }
 
         //Collideable
         public Rectangle GetBounds()
         {
-            return bounds;
+            return Bounds;
         }
         public bool IsSolid()
         {
-            return locked;
+            return _locked;
         }
 
         //Drawable
-        public Texture2D getImage()
-        {
-            return sheet.image;
-        }
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            Rectangle sprite = sheet.getSprite(animFrames.ElementAt(frame));
-            renderer.Draw(sheet.image, position, sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
+            renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_animFrames.ElementAt(_frame)), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
         }
 
         //Updatable
-        public void update(GameTime time)
+        public void Update(GameTime time)
         {
-            int elapsed = time.ElapsedGameTime.Milliseconds;
-            frameTime += elapsed;
-            if (keyName != null && keyName != "")
+            _frameTime += time.ElapsedGameTime.Milliseconds;
+            if (!string.IsNullOrEmpty(_keyName) && DoorKey.GetKey(_keyName)?.PickedUp == true && _state == DoorsState.Closed)
             {
-                DoorKeys k = DoorKeys.getKey(keyName);
-                if (k != null)
-                {
-                    if (k.pickedUp && state == DoorsState.Closed)
-                    {
-                        state = DoorsState.Opening;
-                        frameLength = 100;
-                        unlockObj();
-                    }
-                }
+                _state = DoorsState.Opening;
+                _frameLength = 100;
+                UnlockObj();
             }
 
-            string timeP = "past";
-            if (control.timePeriod == TimePeriod.Present)
-                timeP = "present";
-            switch (state)
+            var timeP = _control.TimePeriod == TimePeriod.Present ? "present" : "past";
+            switch (_state)
             {
                 case DoorsState.Open:
                     Animation = "dooropen" + timeP;
                     break;
                 case DoorsState.Opening:
-                    if (frameTime >= frameLength)
+                    if (_frameTime >= _frameLength)
                     {
                         Animation = "dooropen" + timeP;
-                        state = DoorsState.Open;
+                        _state = DoorsState.Open;
                     }
                     else
+                    {
                         Animation = "dooropening" + timeP;
+                    }
+
                     break;
                 case DoorsState.Closed:
                     Animation = "doorclosed" + timeP;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            if (frameTime >= frameLength)
-            {
-                frameTime = 0;
-                frame = (frame + 1) % animFrames.Count;
-            }
-        }
 
-        public void setKeyName(string keyName)
-        {
-            this.keyName = keyName;
+            if (_frameTime < _frameLength) return;
+
+            _frameTime = 0;
+            _frame = (_frame + 1) % _animFrames.Count;
         }
 
         //Interactive
@@ -265,10 +198,5 @@ namespace Paranothing
         }
 
         # endregion
-
-        public string saveData()
-        {
-            return "StartDoor\nx:" + X + "\ny:" + Y + "\nlocked:" + startLocked + "\nkeyName:" + keyName + "\nEndDoor";
-        }
     }
 }

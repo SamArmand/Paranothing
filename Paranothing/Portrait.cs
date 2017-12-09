@@ -4,113 +4,98 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Portrait : IDrawable, ICollideable, IInteractable, Saveable
+    internal sealed class Portrait : IDrawable, ICollideable, IInteractable, ISaveable
     {
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private SoundManager soundMan = SoundManager.getInstance();
-        private Vector2 position;
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        private Vector2 _position;
         public int X
         {
-            get { return (int)position.X; }
-            set { position.X = value; }
+            get => (int)_position.X;
+            private set => _position.X = value;
         }
         public int Y
         {
-            get { return (int)position.Y; }
-            set { position.Y = value; }
+            get => (int)_position.Y;
+            private set => _position.Y = value;
         }
-        private SpriteSheet sheet;
-        public bool wasMoved { get; private set; }
-        public Vector2 movedPos;
-        public TimePeriod inTime { get; private set; }
-        public TimePeriod sendTime { get; private set; }
-
-        public Portrait(int x, int y)
-        {
-            position = new Vector2(x, y);
-            this.sheet = sheetMan.getSheet("portrait");
-        }
+        private readonly SpriteSheet _sheet;
+        public bool WasMoved { get; }
+        public Vector2 MovedPos;
+        public TimePeriod InTime { get; }
+        public TimePeriod SendTime { get; }
 
         public Portrait(string saveString, string str)
         {
-            this.sheet = sheetMan.getSheet("portrait");
-            sendTime = TimePeriod.Past;
-            wasMoved = false;
-            parseString(saveString, str);
+            _sheet = _sheetMan.GetSheet("portrait");
+            SendTime = TimePeriod.Past;
+            WasMoved = false;
+            ParseString(saveString, str);
         }
 
         //present past constructor
         public Portrait(string saveString, TimePeriod period)
         {
-            this.sheet = sheetMan.getSheet("portrait");
-            wasMoved = false;
-            if (period == TimePeriod.Present)
+            _sheet = _sheetMan.GetSheet("portrait");
+            WasMoved = false;
+            switch (period)
             {
-                parseString(saveString, "EndPresentPortrait");
-                wasMoved = true;
-                inTime = TimePeriod.Present;
-                sendTime = TimePeriod.Past;
-            }
-            else if (period == TimePeriod.Past)
-            {
-                parseString(saveString, "EndPastPortrait");
-                wasMoved = true;
-                inTime = TimePeriod.Past;
-                sendTime = TimePeriod.Past;
-            }
-            else if (period == TimePeriod.FarPast)
-            {
-                parseString(saveString, "EndOldPortrait");
-                sendTime = TimePeriod.FarPast;
-                sheet = sheetMan.getSheet("oldportrait");
+                case TimePeriod.Present:
+                    ParseString(saveString, "EndPresentPortrait");
+                    WasMoved = true;
+                    InTime = TimePeriod.Present;
+                    SendTime = TimePeriod.Past;
+                    break;
+                case TimePeriod.Past:
+                    ParseString(saveString, "EndPastPortrait");
+                    WasMoved = true;
+                    InTime = TimePeriod.Past;
+                    SendTime = TimePeriod.Past;
+                    break;
+                case TimePeriod.FarPast:
+                    ParseString(saveString, "EndOldPortrait");
+                    SendTime = TimePeriod.FarPast;
+                    _sheet = _sheetMan.GetSheet("oldportrait");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(period), period, null);
             }
         }
-        private void parseString(string saveString, string str)
+        private void ParseString(string saveString, string str)
         {
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             X = 0;
             Y = 0;
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith(str) && lineNum < lines.Length)
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith(str, StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
-                    try { Y = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
-                }
-                lineNum++;
+
+                if (!line.StartsWith("y:", StringComparison.Ordinal)) continue;
+
+                try { Y = int.Parse(line.Substring(2)); }
+                catch (FormatException) { }
             }
         }
 
-        public void reset(){}
-
-        public Texture2D getImage()
-        {
-            return sheet.image;
-        }
+        public void Reset(){}
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            if ((!wasMoved || control.timePeriod == inTime) && !(control.timePeriod == TimePeriod.FarPast && sendTime != TimePeriod.FarPast))
-            {
-                if (control.timePeriod == TimePeriod.Present)
-                    renderer.Draw(sheet.image, position, sheet.getSprite(1), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
-                else
-                    renderer.Draw(sheet.image, position, sheet.getSprite(0), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
-            }
+            if ((!WasMoved || _control.TimePeriod == InTime) && !(_control.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast))
+                renderer.Draw(_sheet.Image, _position,
+                    _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+                    new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
         }
 
         public Rectangle GetBounds()
         {
-            return new Rectangle(X, Y, 35, 30); 
+            return new Rectangle(X, Y, 35, 30);
         }
 
         public bool IsSolid()
@@ -120,22 +105,13 @@ namespace Paranothing
 
         public void Interact()
         {
-            if (!(control.timePeriod == TimePeriod.FarPast && sendTime != TimePeriod.FarPast))
-            {
-                Boy player = control.player;
-                player.state = Boy.BoyState.TimeTravel;
-                player.X = X;
+            if (_control.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast) return;
 
-                if (GameTitle.toggleSound)
-                {
-                    soundMan.playSound("Portrait Travel");
-                }
-            }
-        }
+            var player = _control.Player;
+            player.State = Boy.BoyState.TimeTravel;
+            player.X = X;
 
-        public string saveData()
-        {
-            return "StartPortrait\nx:" + X + "\ny:" + Y + "\nEndPortrait";
+            if (GameTitle.ToggleSound) _soundMan.PlaySound("Portrait Travel");
         }
     }
 }

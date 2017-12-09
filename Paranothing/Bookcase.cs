@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -6,65 +6,45 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Bookcases : ICollideable, Updatable, IDrawable, IInteractable, Saveable
+    internal sealed class Bookcase : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
 
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private SoundManager soundMan = SoundManager.getInstance();
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private readonly SoundManager _soundMan = SoundManager.GetInstance();
         //Collidable
-        private Vector2 position;
-        private string button1, button2;
-        private int unlockTimer;
-        public int X
-        {
-            get
-            {
-                return (int)position.X;
-            }
-            set
-            {
-                position.X = value;
-            }
-        }
-        public int Y
-        {
-            get
-            {
-                return (int)position.Y;
-            }
-            set
-            {
-                position.Y = value;
-            }
-        }
-        private Rectangle bounds { get { return new Rectangle(X, Y, 37, 75); } }
+        private Vector2 _position;
+        private readonly string _button1;
+        private readonly string _button2;
+        private int _unlockTimer;
+
+        private int X => (int)_position.X;
+
+        private int Y => (int)_position.Y;
+        private Rectangle Bounds => new Rectangle(X, Y, 37, 75);
 
         //Drawable
-        private SpriteSheet sheet;
-        private bool locked;
-        private bool startLocked;
-        private int frameTime;
-        private int frameLength;
-        private int frame;
-        private string animName;
-        private List<int> animFrames;
+        private readonly SpriteSheet _sheet;
+        private int _frameTime;
+        private readonly int _frameLength;
+        private int _frame;
+        private string _animName;
+        private List<int> _animFrames;
         public enum BookcasesState { Closed, Closing, Opening, Open }
-        public BookcasesState state;
-        public string Animation
+        public BookcasesState State;
+
+        private string Animation
         {
-            get { return animName; }
+            get => _animName;
             set
             {
+                if (!_sheet.HasAnimation(value) || _animName == value) return;
 
-                if (sheet.hasAnimation(value) && animName != value)
-                {
-                    animName = value;
-                    animFrames = sheet.getAnimation(animName);
-                    frame = 0;
-                    frameTime = 0;
-                }
+                _animName = value;
+                _animFrames = _sheet.GetAnimation(_animName);
+                _frame = 0;
+                _frameTime = 0;
             }
         }
 
@@ -72,75 +52,35 @@ namespace Paranothing
 
         # region Constructors
 
-        public Bookcases(int x, int y, string button1, string button2)
+        public Bookcase(string saveString)
         {
-            bool startLocked = false;
-            this.sheet = sheetMan.getSheet("bookcase");
-            position = new Vector2(x, y);
-            this.startLocked = startLocked;
-            locked = startLocked;
-            if (startLocked)
+            _sheet = _sheetMan.GetSheet("bookcase");
+            var x = 0;
+            var y = 0;
+            _button1 = "";
+            _button2 = "";
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndBookcase", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                Animation = "bookcaseclosed";
-                state = BookcasesState.Closed;
-            }
-            else
-            {
-                Animation = "bookcaseopening";
-                state = BookcasesState.Open;
-            }
-            frameLength = 100;
-            this.button1 = button1;
-            this.button2 = button2;
-        }
-
-        public Bookcases(string saveString)
-        {
-            this.sheet = sheetMan.getSheet("bookcase");
-            int x = 0;
-            int y = 0;
-            startLocked = false;
-            button1 = "";
-            button2 = "";
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndBookcase") && lineNum < lines.Length)
-            {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { x = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("button1:"))
-                {
-                    button1 = line.Substring(8).Trim();
-                }
-                if (line.StartsWith("button2:"))
-                {
-                    button2 = line.Substring(8).Trim();
-                }
-                lineNum++;
+
+                if (line.StartsWith("button1:", StringComparison.Ordinal)) _button1 = line.Substring(8).Trim();
+                if (line.StartsWith("button2:", StringComparison.Ordinal)) _button2 = line.Substring(8).Trim();
             }
-            locked = startLocked;
-            if (startLocked)
-            {
-                Animation = "bookcaseclosed";
-                state = BookcasesState.Closed;
-            }
-            else
-            {
-                Animation = "bookcaseopening";
-                state = BookcasesState.Open;
-            }
-            position = new Vector2(x, y);
-            frameLength = 100;
+
+            Animation = "bookcaseopening";
+            State = BookcasesState.Open;
+            _position = new Vector2(x, y);
+            _frameLength = 100;
         }
 
         # endregion
@@ -150,7 +90,7 @@ namespace Paranothing
         //Collideable
         public Rectangle GetBounds()
         {
-            return bounds;
+            return Bounds;
         }
         public bool IsSolid()
         {
@@ -158,131 +98,112 @@ namespace Paranothing
         }
 
         //Drawable
-        public Texture2D getImage()
-        {
-            return sheet.image;
-        }
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            Rectangle sprite = sheet.getSprite(animFrames.ElementAt(frame));
-            renderer.Draw(sheet.image, new Vector2(X, Y), sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Wardrobe);
+            Rectangle sprite = _sheet.GetSprite(_animFrames.ElementAt(_frame));
+            renderer.Draw(_sheet.Image, new Vector2(X, Y), sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Wardrobe);
         }
 
         //Updatable
-        public void update(GameTime time)
+        public void Update(GameTime time)
         {
-            int elapsed = time.ElapsedGameTime.Milliseconds;
-            frameTime += elapsed;
-            if (state == BookcasesState.Opening)
-                unlockTimer += elapsed;
-            if (unlockTimer >= 450)
+            var elapsed = time.ElapsedGameTime.Milliseconds;
+            _frameTime += elapsed;
+            if (State == BookcasesState.Opening)
+                _unlockTimer += elapsed;
+            if (_unlockTimer >= 450)
             {
-                if (GameTitle.toggleSound)
-                {
-                    soundMan.playSound("Final Door Part 2");
-                }
-                unlockTimer = 0;
+                _soundMan.PlaySound("Final Door Part 2");
+                _unlockTimer = 0;
             }
-            bool b1Pushed = false;
-            bool b2Pushed = false;
-            if (button1 != "")
+            var b1Pushed = false;
+            var b2Pushed = false;
+            if (_button1 != "")
             {
-                Button b = Button.getKey(button1);
-                if (b != null && b.stepOn)
-                {
-                    b1Pushed = true;
-                }
+                if (Button.GetKey(_button1)?.StepOn == true) b1Pushed = true;
             }
             else
+            {
                 b1Pushed = true;
+            }
 
-            if (button2 != "")
+            if (_button2 != "")
             {
-                Button b = Button.getKey(button2);
-                if (b != null && b.stepOn)
-                {
-                    b2Pushed = true;
-                }
+                if (Button.GetKey(_button2)?.StepOn == true) b2Pushed = true;
             }
             else
+            {
                 b2Pushed = true;
+            }
 
             if (b1Pushed && b2Pushed)
             {
-                if (state == BookcasesState.Closed)
+                if (State == BookcasesState.Closed)
                 {
-                    state = BookcasesState.Opening;
-                    if (unlockTimer == 0 && GameTitle.toggleSound)
-                    {
-                        soundMan.playSound("Final Door Part 1");
-                    }
+                    State = BookcasesState.Opening;
+                    if (_unlockTimer == 0) _soundMan.PlaySound("Final Door Part 1");
                 }
             }
             else
             {
-                unlockTimer = 0;
-                if (state != BookcasesState.Closed)
-                    state = BookcasesState.Closing;
-                else
-                    state = BookcasesState.Closed;
+                _unlockTimer = 0;
+                State = State != BookcasesState.Closed ? BookcasesState.Closing : BookcasesState.Closed;
             }
 
-            switch (state)
+            switch (State)
             {
                 case BookcasesState.Open:
                     Animation = "bookcaseopen";
                     break;
                 case BookcasesState.Opening:
-                    if (frame == 4)
+                    if (_frame == 4)
                     {
                         Animation = "bookcaseopen";
-                        state = BookcasesState.Open;
+                        State = BookcasesState.Open;
                     }
                     else
+                    {
                         Animation = "bookcaseopening";
+                    }
                     break;
                 case BookcasesState.Closing:
-                    unlockTimer = 0;
-                    if (Animation == "bookcaseclosing" && frame == 4)
+                    _unlockTimer = 0;
+                    if (Animation == "bookcaseclosing" && _frame == 4)
                     {
                         Animation = "close";
-                        state = BookcasesState.Closed;
+                        State = BookcasesState.Closed;
                     }
                     else
+                    {
                         Animation = "bookcaseclosing";
+                    }
                     break;
                 case BookcasesState.Closed:
-                    unlockTimer = 0;
+                    _unlockTimer = 0;
                     Animation = "bookcaseclosed";
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            if (frameTime >= frameLength)
-            {
-                frameTime = 0;
-                frame = (frame + 1) % animFrames.Count;
-            }
+
+            if (_frameTime < _frameLength) return;
+
+            _frameTime = 0;
+            _frame = (_frame + 1) % _animFrames.Count;
         }
 
         public void Interact()
         {
-            Boy player = control.player;
-
-            if (state == BookcasesState.Open)
+            if (State == BookcasesState.Open)
                 Game1.EndGame = true;
-
-        }
-
-        public string saveData()
-        {
-            return "StartBookcases\nx:" + X + "\ny:" + Y + "\nbutton1:" + button1 + "\nbutton2:" + button2 + "\nEndBookcases";
         }
 
         //reset
-        public void reset()
+        public void Reset()
         {
-            if (control.nextLevel())
-                control.initLevel(true);
+            if (_control.NextLevel())
+                _control.InitLevel(true);
         }
 
         # endregion

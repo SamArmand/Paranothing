@@ -4,67 +4,62 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class Floor : IDrawable, ICollideable, Saveable
+    internal sealed class Floor : IDrawable, ICollideable, ISaveable
     {
-        private GameController control = GameController.getInstance();
-        private SpriteSheetManager sheetMan = SpriteSheetManager.getInstance();
-        private Vector2 position;
-        public int X { get { return (int)position.X; } set { position.X = value; } }
-        public int Y { get { return (int)position.Y; } set { position.Y = value; } }
-        public int Width, Height;
-        private Rectangle Box
+        private readonly GameController _control = GameController.GetInstance();
+        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        private Vector2 _position;
+        private int X
         {
-            get { return new Rectangle(X, Y, Width, Height); }
+            get => (int)_position.X;
+            set => _position.X = value;
         }
-        private SpriteSheet sheet;
 
-        public Floor(int X, int Y, int Width, int Height)
+        private int Y
         {
-            this.X = X;
-            this.Y = Y;
-            this.Width = Width;
-            this.Height = Height;
-            this.sheet = sheetMan.getSheet("floor");
+            get => (int)_position.Y;
+            set => _position.Y = value;
         }
+
+        private readonly int _width;
+        private readonly int _height;
+
+        private Rectangle Box => new Rectangle(X, Y, _width, _height);
+        private readonly SpriteSheet _sheet;
 
         public Floor(string saveString)
         {
-            this.sheet = sheetMan.getSheet("floor");
-            string[] lines = saveString.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            _sheet = _sheetMan.GetSheet("floor");
+            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             X = 0;
             Y = 0;
-            Width = 0;
-            Height = 0;
-            int lineNum = 0;
-            string line = "";
-            while (!line.StartsWith("EndFloor") && lineNum < lines.Length)
+            _width = 0;
+            _height = 0;
+            var lineNum = 0;
+            var line = "";
+            while (!line.StartsWith("EndFloor", StringComparison.Ordinal) && lineNum < lines.Length)
             {
-                line = lines[lineNum];
-                if (line.StartsWith("x:"))
-                {
+                line = lines[lineNum++];
+                if (line.StartsWith("x:", StringComparison.Ordinal))
                     try { X = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("y:"))
-                {
+
+                if (line.StartsWith("y:", StringComparison.Ordinal))
                     try { Y = int.Parse(line.Substring(2)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("width:"))
-                {
-                    try { Width = int.Parse(line.Substring(6)); }
+
+                if (line.StartsWith("width:", StringComparison.Ordinal))
+                    try { _width = int.Parse(line.Substring(6)); }
                     catch (FormatException) { }
-                }
-                if (line.StartsWith("height:"))
-                {
-                    try { Height = int.Parse(line.Substring(7)); }
-                    catch (FormatException) { }
-                }
-                lineNum++;
+
+                if (!line.StartsWith("height:", StringComparison.Ordinal)) continue;
+
+                try { _height = int.Parse(line.Substring(7)); }
+                catch (FormatException) { }
             }
         }
 
-        public void reset() { }
+        public void Reset() { }
 
         public Rectangle GetBounds()
         {
@@ -76,23 +71,11 @@ namespace Paranothing
             return true;
         }
 
-        public Texture2D getImage()
-        {
-            return sheet.image;
-        }
-
         public void Draw(SpriteBatch renderer, Color tint)
         {
-
-            if (control.timePeriod == TimePeriod.Present)
-                renderer.Draw(sheet.image, Box, sheet.getSprite(1), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Floor);
-            else
-                renderer.Draw(sheet.image, Box, sheet.getSprite(0), tint, 0f, new Vector2(), SpriteEffects.None, DrawLayer.Floor);
-        }
-
-        public string saveData()
-        {
-            return "StartFloor\nx:" + X + "\ny:" + Y + "\nwidth:" + Width + "\nheight:" + Height + "\nEndFloor";
+            renderer.Draw(_sheet.Image, Box,
+                _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+                new Vector2(), SpriteEffects.None, DrawLayer.Floor);
         }
     }
 }
