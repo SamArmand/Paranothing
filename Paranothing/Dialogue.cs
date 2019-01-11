@@ -3,24 +3,26 @@ using Microsoft.Xna.Framework;
 
 namespace Paranothing
 {
-    internal sealed class Dialogue : ICollideable, IUpdatable, ISaveable
+    sealed class Dialogue : ICollideable, IUpdatable, ISaveable
     {
-        private readonly GameController _control = GameController.GetInstance();
-        private bool Played { get; set; }
-        private readonly string _text;
-        private Vector2 _position;
+        readonly GameController _control = GameController.GetInstance();
+        bool Played { get; set; }
+        readonly string _text;
+        Vector2 _position;
 
-        private int X
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
-        private int Y
+
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
-        private Rectangle Bounds => new Rectangle(X, Y, 20, 20);
+
+        Rectangle Bounds => new Rectangle(X, Y, 20, 20);
 
         public Dialogue(string saveString)
         {
@@ -48,15 +50,9 @@ namespace Paranothing
             }
         }
 
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
+        public Rectangle GetBounds() => Bounds;
 
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public bool IsSolid() => false;
 
         public void Play()
         {

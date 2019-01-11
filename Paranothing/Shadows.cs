@@ -6,21 +6,23 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Shadows : ICollideable, IUpdatable, IDrawable, ISaveable
+    sealed class Shadows : ICollideable, IUpdatable, IDrawable, ISaveable
     {
         # region Attributes
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
-        //Drawable
-        private readonly SpriteSheet _sheet;
-        private int _frame;
-        private int _frameLength;
-        private int _frameTime;
-        private string _animName;
-        private List<int> _animFrames;
 
-        private string Animation
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        readonly SoundManager _soundMan = SoundManager.Instance();
+        //Drawable
+        readonly SpriteSheet _sheet;
+        int _frame;
+        int _frameLength;
+        int _frameTime;
+        string _animName;
+        List<int> _animFrames;
+
+        string Animation
         {
             get => _animName;
             set
@@ -34,17 +36,17 @@ namespace Paranothing
             }
         }
         //Collideable
-        private int _moveSpeedX, _moveSpeedY; // Pixels per animation frame
-        private Vector2 _startPos;
-        private Vector2 _position;
-        private Vector2 _soundPos;
-        private readonly int _patrolDistance;
-        private int _distMoved;
-        private Rectangle Bounds => new Rectangle(X, Y+7, 32, 74);
+        int _moveSpeedX, _moveSpeedY; // Pixels per animation frame
+        readonly Vector2 _startPos;
+        Vector2 _position;
+        Vector2 _soundPos;
+        readonly int _patrolDistance;
+        int _distMoved;
+        Rectangle Bounds => new Rectangle(X, Y+7, 32, 74);
 
         public enum ShadowState { Idle, Walk, SeekSound }
         public ShadowState State;
-        private Direction _direction;
+        Direction _direction;
 
         # endregion
 
@@ -221,15 +223,9 @@ namespace Paranothing
         }
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
+        public Rectangle GetBounds() => Bounds;
 
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public bool IsSolid() => false;
 
         # endregion
     }

@@ -5,18 +5,20 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
+    sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
     {
         # region Attributes
-        private static readonly Dictionary<string, DoorKey> KeyDict = new Dictionary<string, DoorKey>();
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        static readonly Dictionary<string, DoorKey> KeyDict = new Dictionary<string, DoorKey>();
+        readonly GameController _control = GameController.GetInstance();
+
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
         //Collideable
-        private Vector2 _position;
-        private Rectangle Bounds => new Rectangle(X, Y, 16, 9);
+        Vector2 _position;
+        Rectangle Bounds => new Rectangle(X, Y, 16, 9);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
+        readonly SpriteSheet _sheet;
         public bool RestrictTime { get; }
         public TimePeriod InTime { get; }
         public bool PickedUp;
@@ -78,38 +80,29 @@ namespace Paranothing
             KeyDict.Add(Name, this);
         }
 
-        public void Reset()
-        {
-            PickedUp = false;
-        }
+        public void Reset() => PickedUp = false;
 
         # endregion
 
         # region Methods
 
         //Accessors & Mutators
-        private int X
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
 
-        private int Y
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
+        public Rectangle GetBounds() => Bounds;
 
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public bool IsSolid() => false;
 
         //Drawable
 

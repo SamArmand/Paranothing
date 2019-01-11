@@ -1,16 +1,13 @@
 #region Using Statements
-
 #endregion
 
 namespace Paranothing
 {
-    internal static class Program
-    {
-        private static void Main ()
-        {
-            using (var game = new Game1 ()) {
-                game.Run ();
-            }
+    public static class Program
+	{
+		static void Main (string [] args)
+		{
+            using (var game = new Game1()) game.Run();
         }
     }
 }

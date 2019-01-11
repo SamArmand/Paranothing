@@ -4,12 +4,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Portrait : IDrawable, ICollideable, IInteractable, ISaveable
+    sealed class Portrait : IDrawable, ICollideable, IInteractable, ISaveable
     {
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
-        private Vector2 _position;
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SoundManager _soundMan = SoundManager.Instance();
+        Vector2 _position;
         public int X
         {
             get => (int)_position.X;
@@ -20,7 +20,8 @@ namespace Paranothing
             get => (int)_position.Y;
             private set => _position.Y = value;
         }
-        private readonly SpriteSheet _sheet;
+
+        readonly SpriteSheet _sheet;
         public bool WasMoved { get; }
         public Vector2 MovedPos;
         public TimePeriod InTime { get; }
@@ -62,7 +63,8 @@ namespace Paranothing
                     throw new ArgumentOutOfRangeException(nameof(period), period, null);
             }
         }
-        private void ParseString(string saveString, string str)
+
+        void ParseString(string saveString, string str)
         {
             var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             X = 0;
@@ -93,15 +95,9 @@ namespace Paranothing
                     new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
         }
 
-        public Rectangle GetBounds()
-        {
-            return new Rectangle(X, Y, 35, 30);
-        }
+        public Rectangle GetBounds() => new Rectangle(X, Y, 35, 30);
 
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public bool IsSolid() => false;
 
         public void Interact()
         {

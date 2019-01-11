@@ -2,7 +2,7 @@
 
 namespace Paranothing
 {
-    internal interface ICollideable
+    interface ICollideable
     {
         Rectangle GetBounds();
         bool IsSolid();

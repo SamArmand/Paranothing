@@ -4,30 +4,31 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Chair : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    sealed class Chair : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
 
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        //Collidable
-        private Vector2 _startPos;
-        private Vector2 _positionPres;
-        private Vector2 _positionPast1;
-        private Vector2 _positionPast2;
-        private int _tX, _tY;
-        private const int Speed = 3;
-        private int _moveTime;
-        private const int Movelength = 70;
+        readonly GameController _control = GameController.GetInstance();
 
-        private Rectangle Bounds => new Rectangle(X, Y, 40, 52);
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        //Collidable
+        readonly Vector2 _startPos;
+        Vector2 _positionPres;
+        Vector2 _positionPast1;
+        Vector2 _positionPast2;
+        int _tX, _tY;
+        const int Speed = 3;
+        int _moveTime;
+        const int Movelength = 70;
+
+        Rectangle Bounds => new Rectangle(X, Y, 40, 52);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
+        readonly SpriteSheet _sheet;
         public enum ChairsState { Idle, Falling, Moving }
 
         internal ChairsState State;
-        private readonly ActionBubble _bubble = new ActionBubble();
+        readonly ActionBubble _bubble = new ActionBubble();
 
         # endregion
 
@@ -141,14 +142,8 @@ namespace Paranothing
         }
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public Rectangle GetBounds() => Bounds;
+        public bool IsSolid() => false;
 
         public void Draw(SpriteBatch renderer, Color tint)
         {

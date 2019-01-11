@@ -3,26 +3,36 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace Paranothing
 {
-    internal sealed class SoundManager
+    sealed class SoundManager
     {
-        private static SoundManager _instance;
+        static SoundManager _instance;
 
-        public Dictionary<string, SoundEffect> SoundEffects { get; }
+        public Dictionary<string, SoundEffect> SoundEffects { get; } = new Dictionary<string, SoundEffect>();
 
-        public static SoundManager GetInstance()
-        {
-            return _instance ?? (_instance = new SoundManager());
-        }
+        public Dictionary<string, SoundEffectInstance> SoundEffectInstances { get; } = new Dictionary<string, SoundEffectInstance>();
+        public static SoundManager Instance() => _instance ?? (_instance = new SoundManager());
 
-        private SoundManager()
-        {
-            SoundEffects = new Dictionary<string, SoundEffect>();
-        }
-
-        public void PlaySound(string soundName)
+        public void PlaySound(string soundName, bool isLooped = false)
         {
             if (GameTitle.ToggleSound)
-                SoundEffects[soundName].Play();
+            {
+                var soundEffectInstance = SoundEffectInstances[soundName];
+
+                if (SoundEffectInstances.ContainsKey(soundName) && soundEffectInstance.State == SoundState.Playing)
+                    return;
+
+                soundEffectInstance = SoundEffects[soundName].CreateInstance();
+                soundEffectInstance.IsLooped = isLooped;
+                soundEffectInstance.Play();
+            }
+        }
+
+        public void StopSound(string soundName)
+        {
+            var soundEffectInstance = SoundEffectInstances[soundName];
+
+            if (GameTitle.ToggleSound && SoundEffectInstances.ContainsKey(soundName) && soundEffectInstance.State == SoundState.Playing)
+                soundEffectInstance.Stop();
         }
     }
 }

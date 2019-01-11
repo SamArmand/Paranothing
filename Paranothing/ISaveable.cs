@@ -1,6 +1,6 @@
 ﻿namespace Paranothing
 {
-    public interface ISaveable
+    interface ISaveable
     {
         void Reset();
     }

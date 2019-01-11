@@ -4,28 +4,29 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Floor : IDrawable, ICollideable, ISaveable
+    sealed class Floor : IDrawable, ICollideable, ISaveable
     {
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private Vector2 _position;
-        private int X
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        Vector2 _position;
+
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
 
-        private int Y
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
 
-        private readonly int _width;
-        private readonly int _height;
+        readonly int _width;
+        readonly int _height;
 
-        private Rectangle Box => new Rectangle(X, Y, _width, _height);
-        private readonly SpriteSheet _sheet;
+        Rectangle Box => new Rectangle(X, Y, _width, _height);
+        readonly SpriteSheet _sheet;
 
         public Floor(string saveString)
         {
@@ -61,21 +62,12 @@ namespace Paranothing
 
         public void Reset() { }
 
-        public Rectangle GetBounds()
-        {
-            return Box;
-        }
+        public Rectangle GetBounds() => Box;
 
-        public bool IsSolid()
-        {
-            return true;
-        }
+        public bool IsSolid() => true;
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            renderer.Draw(_sheet.Image, Box,
+        public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, Box,
                 _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
                 new Vector2(), SpriteEffects.None, DrawLayer.Floor);
-        }
     }
 }

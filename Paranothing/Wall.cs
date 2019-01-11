@@ -4,30 +4,31 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Wall : IDrawable, ICollideable, IUpdatable, ISaveable
+    sealed class Wall : IDrawable, ICollideable, IUpdatable, ISaveable
     {
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private Vector2 _position;
-        private int X
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        Vector2 _position;
+
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
 
-        private int Y
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
 
-        private readonly int _width;
-        private readonly int _height;
+        readonly int _width;
+        readonly int _height;
 
-        private Rectangle Box => new Rectangle(X, Y, _width, _height);
-        private readonly SpriteSheet _sheet;
-        private bool _intact;
-        private readonly bool _startIntact;
+        Rectangle Box => new Rectangle(X, Y, _width, _height);
+        readonly SpriteSheet _sheet;
+        bool _intact;
+        readonly bool _startIntact;
 
         public Wall(string saveString)
         {
@@ -68,20 +69,12 @@ namespace Paranothing
 
         public void Reset() { }
 
-        public Rectangle GetBounds()
-        {
-            return Box;
-        }
+        public Rectangle GetBounds() => Box;
 
-        public bool IsSolid()
-        {
-            return _intact;
-        }
+        public bool IsSolid() => _intact;
 
-        public void Update(GameTime time)
-        {
-            _intact = _control.TimePeriod == TimePeriod.Past || _startIntact;
-        }
+        public void Update(GameTime time) => _intact = _control.TimePeriod == TimePeriod.Past || _startIntact;
+
         public void Draw(SpriteBatch renderer, Color tint)
         {
             switch (_control.TimePeriod)

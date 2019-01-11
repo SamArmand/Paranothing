@@ -1,28 +1,24 @@
 ﻿using System.Linq;
- using Microsoft.Xna.Framework;
- using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class ActionBubble : IDrawable
+    sealed class ActionBubble : IDrawable
     {
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
         public enum BubbleAction { None, Wardrobe, Push, Portrait, OldPortrait, Stair, Chair, Bookcase }
-        private BubbleAction _action;
-        private bool _negated;
-        private bool _visible;
-        private readonly SpriteSheet _sheet;
-        private Boy _player;
-        public Boy Player
-        {
-            set => _player = value;
-        }
+
+        BubbleAction _action;
+        bool _negated;
+        readonly SpriteSheet _sheet;
+        public Boy Player { private get; set; }
         public Chair Chair { set; private get; }
 
-        private string _animName;
-        private int _animIndex;
+        string _animName;
+        int _animIndex;
 
-        private string Animation
+        string Animation
         {
             set
             {
@@ -32,31 +28,22 @@ namespace Paranothing
                 _animIndex = _sheet.GetAnimation(_animName).First();
             }
         }
-        private readonly int _negateInd;
+
+        readonly int _negateInd;
 
         public ActionBubble()
         {
             _sheet = _sheetMan.GetSheet("action");
             _action = BubbleAction.None;
-            _visible = false;
             _negated = false;
             if (_sheet.HasAnimation("negate")) _negateInd = _sheet.GetAnimation("negate").First();
         }
 
-        public bool IsVisible()
-        {
-            return _visible;
-        }
+        public bool IsVisible { get; private set; }
 
-        public void Show()
-        {
-            _visible = true;
-        }
+        public void Show() => IsVisible = true;
 
-        public void Hide()
-        {
-            _visible = false;
-        }
+        public void Hide() => IsVisible = false;
 
         public void SetAction(BubbleAction action, bool negated)
         {
@@ -95,11 +82,11 @@ namespace Paranothing
 
         public void Draw(SpriteBatch renderer, Color tint)
         {
-            if (!_visible) return;
+            if (!IsVisible) return;
 
             var drawPos = new Vector2();
-            if (_action != BubbleAction.Chair && _player != null)
-                drawPos = new Vector2(_player.X + 11, _player.Y - 27);
+            if (_action != BubbleAction.Chair && Player != null)
+                drawPos = new Vector2(Player.X + 11, Player.Y - 27);
             else if (Chair != null)
                 drawPos = new Vector2(Chair.X + 11, Chair.Y - 32);
             renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(0), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.ActionBubble);

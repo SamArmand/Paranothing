@@ -4,15 +4,17 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Rubble : ICollideable, IDrawable, ISaveable
+    sealed class Rubble : ICollideable, IDrawable, ISaveable
     {
         # region Attributes
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        readonly GameController _control = GameController.GetInstance();
+
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
         //Collideable
-        private Vector2 _position;
+        Vector2 _position;
         //Drawable
-        private readonly SpriteSheet _sheet;
+        readonly SpriteSheet _sheet;
 
         # endregion
 
@@ -47,28 +49,24 @@ namespace Paranothing
         # region Methods
 
         //Accessors & Mutators
-        private int X
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
-        private int Y
+
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
-        private Rectangle Bounds => new Rectangle(X, Y, 37, 28);
+
+        Rectangle Bounds => new Rectangle(X, Y, 37, 28);
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
+        public Rectangle GetBounds() => Bounds;
 
-        public bool IsSolid()
-        {
-            return _control.TimePeriod == TimePeriod.Present;
-        }
+        public bool IsSolid() => _control.TimePeriod == TimePeriod.Present;
 
         //Drawable
 

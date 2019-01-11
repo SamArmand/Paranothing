@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Paranothing
 {
-    internal sealed class Level
+    sealed class Level
     {
         internal int Width; // Complete width and height of the level
         internal int Height; // Complete width and height of the level
@@ -15,7 +15,7 @@ namespace Paranothing
         internal string Name { get; private set; }
         internal string NextLevel { get; private set; }
         internal TimePeriod StartTime;
-        private List<ISaveable> _savedObjs;
+        List<ISaveable> _savedObjs;
 
         public Level(string filename)
         {
@@ -23,17 +23,11 @@ namespace Paranothing
             LoadFromFile(filename);
         }
 
-        private void AddObj(ISaveable obj)
-        {
-            _savedObjs.Add(obj);
-        }
+        void AddObj(ISaveable obj) => _savedObjs.Add(obj);
 
-        public IEnumerable<ISaveable> GetObjs()
-        {
-            return _savedObjs;
-        }
+        public IEnumerable<ISaveable> GetObjs() => _savedObjs;
 
-        private void LoadFromFile(string filename)
+        void LoadFromFile(string filename)
         {
             try
             {
@@ -44,7 +38,7 @@ namespace Paranothing
             }
         }
 
-        private void CreateFromString(string saveString)
+        void CreateFromString(string saveString)
         {
             Width = 640;
             Height = 360;
@@ -54,7 +48,7 @@ namespace Paranothing
 
             var saveLines = saveString.Split(new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
             var lineNum = 0;
-            var line = "";
+            var line = string.Empty;
             while (!line.StartsWith("StartLevel", StringComparison.Ordinal) && lineNum < saveLines.Length) line = saveLines[lineNum++];
             var objData = new StringBuilder();
             while (!line.StartsWith("EndLevel", StringComparison.Ordinal) && lineNum < saveLines.Length)
@@ -284,11 +278,11 @@ namespace Paranothing
                     }
                     AddObj(new Floor(objData.ToString()));
                 }
-                lineNum++;
+                ++lineNum;
             }
         }
 
-        private static Color ParseColor(string color)
+        static Color ParseColor(string color)
         {
             var rgb = color.Split(',');
             return new Color(int.Parse(rgb[0]), int.Parse(rgb[1]), int.Parse(rgb[2]));

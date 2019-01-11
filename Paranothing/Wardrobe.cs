@@ -6,19 +6,21 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Wardrobe : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    sealed class Wardrobe : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
-        private static readonly Dictionary<string, Wardrobe> WardrobeDict = new Dictionary<string, Wardrobe>();
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+
+        static readonly Dictionary<string, Wardrobe> WardrobeDict = new Dictionary<string, Wardrobe>();
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        readonly SoundManager _soundMan = SoundManager.Instance();
         //Collidable
-        private Vector2 _startPos;
-        private Vector2 _positionPres;
-        private Vector2 _positionPast1;
-        private Vector2 _positionPast2;
-        private readonly string _keyName = "";
+        readonly Vector2 _startPos;
+        Vector2 _positionPres;
+        Vector2 _positionPast1;
+        Vector2 _positionPast2;
+        readonly string _keyName = "";
         public int X
         {
             get
@@ -79,19 +81,19 @@ namespace Paranothing
         public Rectangle PushBox => new Rectangle(X+2, Y+2, 65, 78);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
-        private string _linkedName;
-        private bool _locked;
-        private readonly bool _startLocked;
-        private int _frameTime;
-        private int _frameLength;
-        private int _frame;
-        private string _animName;
-        private List<int> _animFrames;
+        readonly SpriteSheet _sheet;
+        string _linkedName;
+        bool _locked;
+        readonly bool _startLocked;
+        int _frameTime;
+        int _frameLength;
+        int _frame;
+        string _animName;
+        List<int> _animFrames;
         public enum WardrobeState { Closed, Opening, Open }
         public WardrobeState State;
 
-        private string Animation
+        string Animation
         {
             set
             {
@@ -183,14 +185,9 @@ namespace Paranothing
         # region Methods
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return PushBox;
-        }
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public Rectangle GetBounds() => PushBox;
+
+        public bool IsSolid() => false;
 
         //Drawable
 
@@ -242,10 +239,7 @@ namespace Paranothing
             _frame = (_frame + 1) % _animFrames.Count;
         }
 
-        private void SetLinkedWr(string linkedName)
-        {
-            _linkedName = linkedName;
-        }
+        void SetLinkedWr(string linkedName) => _linkedName = linkedName;
 
         public Wardrobe GetLinkedWr()
         {
@@ -255,17 +249,14 @@ namespace Paranothing
             return w;
         }
 
-        private void UnlockObj()
+        void UnlockObj()
         {
             _locked = false;
 
             if (GameTitle.ToggleSound) _soundMan.PlaySound("Wardrobe Unlock");
         }
 
-        public bool IsLocked()
-        {
-            return _locked;
-        }
+        public bool IsLocked() => _locked;
 
         public void Interact()
         {

@@ -9,10 +9,10 @@ namespace Paranothing
     /// <summary>
     /// A Spritesheet utility class
     /// </summary>
-    internal sealed class SpriteSheet
+    sealed class SpriteSheet
     {
-        private readonly Dictionary<string, List<int>> _animList;
-        private readonly List<Rectangle> _sprites;
+        readonly Dictionary<string, List<int>> _animList;
+        readonly List<Rectangle> _sprites;
         internal readonly Texture2D Image;
 
         internal SpriteSheet(Texture2D image)
@@ -30,10 +30,7 @@ namespace Paranothing
         /// <param name="width">Width of the sprite</param>
         /// <param name="height">Height of the sprite</param>
         /// <returns></returns>
-        internal void AddSprite(int x, int y, int width, int height)
-        {
-            _sprites.Add(new Rectangle(x, y, width, height));
-        }
+        internal void AddSprite(int x, int y, int width, int height) => _sprites.Add(new Rectangle(x, y, width, height));
 
         /// <summary>
         /// Divides the sprite sheet into a grid with cells of equal size. Good for uniform sheets.
@@ -53,15 +50,10 @@ namespace Paranothing
             var count = 0;
             for (var row = 0; row != rows; row++)
                 for (var col = 0; col != columns; col++)
-                    if (count < limit || limit <= 0)
-                    {
+                    if (count++ < limit || limit <= 0)
                         _sprites.Add(new Rectangle((width + padX) * col, (height + padY) * row, width, height));
-                        count++;
-                    }
                     else
-                    {
                         return;
-                    }
         }
 
         /// <summary>
@@ -70,7 +62,7 @@ namespace Paranothing
         /// <param name="name">The name of the animation (must be unique to the sprite sheet).</param>
         /// <param name="spriteIndices">A List of the indices of the sprites in the animation.</param>
         /// <returns>True if adding was successful, false otherwise.</returns>
-        private void AddAnimation(string name, List<int> spriteIndices)
+        void AddAnimation(string name, List<int> spriteIndices)
         {
             name = name.ToLower();
             if (_animList.ContainsKey(name)) return;
@@ -84,10 +76,7 @@ namespace Paranothing
         /// <param name="name">The name of the animation (must be unique to the sprite sheet).</param>
         /// <param name="spriteIndices">An array of the indices of the sprites in the animation.</param>
         /// <returns>True if adding was successful, false otherwise.</returns>
-        public void AddAnimation(string name, IEnumerable<int> spriteIndices)
-        {
-            AddAnimation(name.ToLower(), spriteIndices.ToList());
-        }
+        public void AddAnimation(string name, IEnumerable<int> spriteIndices) => AddAnimation(name.ToLower(), spriteIndices.ToList());
 
         /// <summary>
         /// Gets a list of sprite indices in an animation.

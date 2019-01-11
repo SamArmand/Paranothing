@@ -1,8 +1,0 @@
-Clicking the chair move button (without holding it) makes Bruce enter a continuous animation loop.
-
-We can travel from past1 to present through the past2 portrait.
-
-Chairs move through doors. - FIXED
-
-The pause menu in level 2 is messed up (it's gets stuck and goes down too far) - FIXED
-

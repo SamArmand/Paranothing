@@ -6,29 +6,31 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Door : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    sealed class Door : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
 
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        readonly SoundManager _soundMan = SoundManager.Instance();
         //Collidable
-        private Vector2 _position;
-        private Rectangle Bounds => new Rectangle(X + 25, Y, 8, 75);
+        Vector2 _position;
+        Rectangle Bounds => new Rectangle(X + 25, Y, 8, 75);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
-        private readonly bool _startLocked;
-        private bool _locked;
-        private int _frameTime;
-        private int _frameLength;
-        private int _frame;
-        private string _animName;
-        private List<int> _animFrames;
-        private enum DoorsState { Closed, Opening, Open }
-        private DoorsState _state;
-        private readonly string _keyName;
+        readonly SpriteSheet _sheet;
+        readonly bool _startLocked;
+        int _frameTime;
+        int _frameLength;
+        int _frame;
+        string _animName;
+        List<int> _animFrames;
+
+        enum DoorsState { Closed, Opening, Open }
+
+        DoorsState _state;
+        readonly string _keyName;
 
         # endregion
 
@@ -60,9 +62,9 @@ namespace Paranothing
 
                 if (line.StartsWith("keyName:", StringComparison.Ordinal)) _keyName = line.Substring(8).Trim();
             }
-            _locked = _startLocked;
+            IsLocked = _startLocked;
 
-            if (_locked)
+            if (IsLocked)
             {
                 Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
                 _state = DoorsState.Closed;
@@ -81,9 +83,9 @@ namespace Paranothing
 
         public void Reset()
         {
-            _locked = _startLocked;
+            IsLocked = _startLocked;
 
-            if (_locked)
+            if (IsLocked)
             {
                 Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
                 _state = DoorsState.Closed;
@@ -96,19 +98,19 @@ namespace Paranothing
         }
 
         //Accessors & Mutators
-        private int X
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
 
-        private int Y
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
 
-        private string Animation
+        string Animation
         {
             set
             {
@@ -121,34 +123,23 @@ namespace Paranothing
             }
         }
 
-        private void UnlockObj()
+        void UnlockObj()
         {
-            _locked = false;
+            IsLocked = false;
 
             _soundMan.PlaySound("Door Unlock");
         }
 
-        public bool IsLocked()
-        {
-            return _locked;
-        }
+        public bool IsLocked { get; private set; }
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
-        public bool IsSolid()
-        {
-            return _locked;
-        }
+        public Rectangle GetBounds() => Bounds;
+
+        public bool IsSolid() => IsLocked;
 
         //Drawable
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_animFrames.ElementAt(_frame)), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
-        }
+        public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_animFrames.ElementAt(_frame)), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
 
         //Updatable
         public void Update(GameTime time)

@@ -8,13 +8,13 @@ using Microsoft.Xna.Framework.Media;
 
 namespace Paranothing
 {
-    internal enum GameState { MainMenu, Game }
+    enum GameState { MainMenu, Game }
 
-    internal enum Direction { Left, Right, Up, Down }
+    enum Direction { Left, Right, Up, Down }
 
-    internal enum TimePeriod { FarPast, Past, Present }
+    enum TimePeriod { FarPast, Past, Present }
 
-    internal struct DrawLayer {
+    struct DrawLayer {
         internal const float ActionBubble = 0.01f;
         public const float Chairs = 0.015f;
         public const float Player = 0.02f;
@@ -32,94 +32,94 @@ namespace Paranothing
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    internal sealed class Game1 : Game
+    sealed class Game1 : Game
     {
-        private readonly GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
-        private SpriteBatch _spriteBatch2;
+        readonly GraphicsDeviceManager _graphics;
+        SpriteBatch _spriteBatch;
+        SpriteBatch _spriteBatch2;
 
         # region Attributes
-        //Effect greyScale;
+        Effect greyScale;
 
-        private Song _bgMusic;
+        Song _bgMusic;
 
-        private Texture2D _boyTex;
-        private SpriteSheet _boySheet;
+        Texture2D _boyTex;
+        SpriteSheet _boySheet;
 
-        private Texture2D _shadowTex;
-        private SpriteSheet _shadowSheet;
+        Texture2D _shadowTex;
+        SpriteSheet _shadowSheet;
 
-        private Texture2D _actionTex;
-        private SpriteSheet _actionSheet;
+        Texture2D _actionTex;
+        SpriteSheet _actionSheet;
 
-        private Texture2D _floorTex;
-        private SpriteSheet _floorSheet;
+        Texture2D _floorTex;
+        SpriteSheet _floorSheet;
 
-        private Texture2D _wallTex;
-        private SpriteSheet _wallSheet;
+        Texture2D _wallTex;
+        SpriteSheet _wallSheet;
 
-        private Texture2D _wallpaperTex;
-        private SpriteSheet _wallpaperSheet;
+        Texture2D _wallpaperTex;
+        SpriteSheet _wallpaperSheet;
 
-        private Texture2D _wardrobeTex;
-        private SpriteSheet _wardrobeSheet;
+        Texture2D _wardrobeTex;
+        SpriteSheet _wardrobeSheet;
 
         //Portrait
-        private Texture2D _portraitTex;
-        private SpriteSheet _portraitSheet;
+        Texture2D _portraitTex;
+        SpriteSheet _portraitSheet;
 
-        private Texture2D _rubbleTex;
-        private SpriteSheet _rubbleSheet;
+        Texture2D _rubbleTex;
+        SpriteSheet _rubbleSheet;
 
-        private Texture2D _stairTex;
-        private SpriteSheet _stairSheet;
+        Texture2D _stairTex;
+        SpriteSheet _stairSheet;
 
-        private Texture2D _doorTex;
-        private SpriteSheet _doorSheet;
+        Texture2D _doorTex;
+        SpriteSheet _doorSheet;
 
-        private Texture2D _oldPortraitTex;
-        private SpriteSheet _oldPortraitSheet;
+        Texture2D _oldPortraitTex;
+        SpriteSheet _oldPortraitSheet;
 
-        private Texture2D _keyTex;
-        private SpriteSheet _keySheet;
+        Texture2D _keyTex;
+        SpriteSheet _keySheet;
 
-        private Texture2D _chairTex;
-        private SpriteSheet _chairSheet;
+        Texture2D _chairTex;
+        SpriteSheet _chairSheet;
 
-        private Texture2D _finalDoorTex;
-        private SpriteSheet _finalDoorSheet;
+        Texture2D _finalDoorTex;
+        SpriteSheet _finalDoorSheet;
 
-        private Texture2D _buttonTex;
-        private SpriteSheet _buttonSheet;
+        Texture2D _buttonTex;
+        SpriteSheet _buttonSheet;
 
-        private Texture2D _controller;
+        Texture2D _controller;
 
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SoundManager _soundMan = SoundManager.Instance();
 
-        private const int ScreenWidth = 1280;
-        private const int ScreenHeight = 720;
+        const int ScreenWidth = 1280;
+        const int ScreenHeight = 720;
 
-        private Boy _player;
-        private ActionBubble _actionBubble;
+        Boy _player;
+        ActionBubble _actionBubble;
 
         //Fonts
         public static SpriteFont GameFont;
-        private static SpriteFont _titleFont;
+        static SpriteFont _titleFont;
         public static SpriteFont MenuFont;
         //Title
-        private GameTitle _title;
-        private Vector2 _startPosition;
+        GameTitle _title;
+        Vector2 _startPosition;
 
-        private Level _tutorial, _level1, _level2, _level3, _level4;
+        Level _tutorial, _level1, _level2, _level3, _level4;
 
         public bool GameInProgress;
         public static bool EndGame;
-        private float _fadeOpacity;
-        private readonly float _opacityPerSecond = 0.02f;
-        private Stopwatch _stopwatch;
-        private Texture2D _white;
+        float _fadeOpacity;
+        readonly float _opacityPerSecond = 0.02f;
+        Stopwatch _stopwatch;
+        Texture2D _white;
 
         # endregion
 
@@ -138,7 +138,7 @@ namespace Paranothing
         /// <param name="textColor">color of text</param>
         /// <param name="x">left hand edge of text</param>
         /// <param name="y">top of text</param>
-        private void DrawText(string text, SpriteFont font, Color textColor, float x, float y)
+        void DrawText(string text, SpriteFont font, Color textColor, float x, float y)
         {
             int layer;
             var vectorText = new Vector2(x, y);
@@ -156,16 +156,17 @@ namespace Paranothing
         }
 
         //Title
-        private void LoadTitleContents()
+        void LoadTitleContents()
         {
-            _titleFont = Content.Load<SpriteFont>("TitleFont");
-            GameFont = Content.Load<SpriteFont>("GameFont");
-            MenuFont = Content.Load<SpriteFont>("GameFont");
-            _title = new GameTitle(Content.Load<Texture2D>("screenshot_for_menu"), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
+            _titleFont = Content.Load<SpriteFont>("Fonts/TitleFont");
+            GameFont = Content.Load<SpriteFont>("Fonts/GameFont");
+            MenuFont = Content.Load<SpriteFont>("Fonts/MenuFont");
+            _title = new GameTitle(Content.Load<Texture2D>("Sprites/screenshot_for_menu"), new Rectangle(0, 0, ScreenWidth, ScreenHeight));
             _title.SetBottomTextRectangle(GameFont.MeasureString("Press Start"));
             _startPosition = new Vector2(_title.BottomTextRectangle.X, _title.BottomTextRectangle.Y);
         }
-        private void DrawTitleText()
+
+        void DrawTitleText()
         {
             _title.SetTopTextRectangle(_titleFont.MeasureString("Paranothing"));
             DrawText("Paranothing", _titleFont, Color.WhiteSmoke, _title.TopTextRectangle.X, _title.TopTextRectangle.Y);
@@ -200,7 +201,7 @@ namespace Paranothing
 
             //Stuff for fade
             _stopwatch = new Stopwatch();
-            _white = Content.Load<Texture2D>("white");
+            _white = Content.Load<Texture2D>("Sprites/white");
 
             _soundMan.SoundEffects.Add("Button Press", Content.Load<SoundEffect>("Sounds/Button Press"));
             _soundMan.SoundEffects.Add("Chair Drop", Content.Load<SoundEffect>("Sounds/Chair Drop"));
@@ -226,7 +227,7 @@ namespace Paranothing
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Volume = 0.1f;
 
-            //greyScale = Content.Load<Effect>("Greyscale");
+            greyScale = Content.Load<Effect>("Effects/Greyscale");
 
             _wallpaperTex = Content.Load<Texture2D>("Sprites/Wallpaper");
             _wallpaperSheet = new SpriteSheet(_wallpaperTex);
@@ -353,11 +354,11 @@ namespace Paranothing
             _actionBubble = new ActionBubble();
             _player = new Boy(254, 240, _actionBubble);
             var camera = new Camera(0, 360, 1280, 720, 2.0f);
-            _tutorial = new Level("levels/tutorial.lvl");
-            _level1 = new Level("levels/level1.lvl");
-            _level2 = new Level("levels/level2.lvl");
-            _level3 = new Level("levels/level3.lvl");
-            _level4 = new Level("levels/level4.lvl");
+            _tutorial = new Level("Content/Levels/tutorial.lvl");
+            _level1 = new Level("Content/Levels/level1.lvl");
+            _level2 = new Level("Content/Levels/level2.lvl");
+            _level3 = new Level("Content/Levels/level3.lvl");
+            _level4 = new Level("Content/Levels/level4.lvl");
             _control.AddLevel(_tutorial);
             _control.AddLevel(_level1);
             _control.AddLevel(_level2);
@@ -369,7 +370,7 @@ namespace Paranothing
             _control.SetCamera(camera);
             _control.InitLevel(false);
 
-            _controller = Content.Load<Texture2D>("controller");
+            _controller = Content.Load<Texture2D>("Sprites/controller");
 
             // TODO: use this.Content to load your game content here
             LoadTitleContents();
@@ -396,10 +397,7 @@ namespace Paranothing
         /// UnloadContent will be called once per game and is the place to unload
         /// all content.
         /// </summary>
-        protected override void UnloadContent()
-        {
-            _graphics.Dispose();
-        }
+        protected override void UnloadContent() => _graphics.Dispose();
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -483,8 +481,8 @@ namespace Paranothing
                     break;
                 case GameState.Game:
                     Effect pastEffect = null;
-                    //if (control.timePeriod != TimePeriod.Present)
-                    //    pastEffect = greyScale;
+                    if (_control.TimePeriod != TimePeriod.Present)
+                        pastEffect = greyScale;
                     var transform = Matrix.Identity;
                     transform *= Matrix.CreateTranslation(-_control.Camera.X, -_control.Camera.Y, 0);
                     transform *= Matrix.CreateScale(_control.Camera.Scale);
@@ -515,7 +513,7 @@ namespace Paranothing
             base.Draw(gameTime);
         }
 
-        private void DrawWallpaper(SpriteBatch spriteBatch, SpriteSheet wallpaper)
+        void DrawWallpaper(SpriteBatch spriteBatch, SpriteSheet wallpaper)
         {
             var paperBounds = wallpaper.GetSprite(0);
             var paperColor = _control.Level.WallpaperColor;
@@ -525,7 +523,7 @@ namespace Paranothing
             var xCount = _control.Level.Width / paperBounds.Height + 2;
             var startY = (int)(Math.Floor((float)-_control.Camera.Y / paperBounds.Height)) * paperBounds.Height;
             var yCount = _control.Level.Height / paperBounds.Height + 1;
-               // float minZ = (float)Math.Floor(ball.Z / 10) * 10.0f - 10;
+
             for (var drawX = 0; drawX < xCount; drawX++)
                 for (var drawY = 0; drawY < yCount; drawY++)
                 {
@@ -542,7 +540,7 @@ namespace Paranothing
             if (_control.TimePeriod != TimePeriod.Present) return;
 
             paperBounds = wallpaper.GetSprite(1);
-            //dest = new Rectangle(0, 0, ScreenWidth / 2, ScreenHeight / 2);
+
             for (var drawX = 0; drawX < xCount; drawX++)
                 for (var drawY = 0; drawY < yCount; drawY++)
                 {

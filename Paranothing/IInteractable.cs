@@ -1,6 +1,6 @@
 ﻿namespace Paranothing
 {
-    internal interface IInteractable
+    interface IInteractable
     {
         void Interact();
     }

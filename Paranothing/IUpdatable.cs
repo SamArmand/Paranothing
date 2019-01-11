@@ -2,7 +2,7 @@
 
 namespace Paranothing
 {
-    internal interface IUpdatable
+    interface IUpdatable
     {
         void Update(GameTime time);
     }

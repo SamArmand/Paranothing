@@ -1,4 +1,4 @@
-The game was developped with Microsft Visual Studio 2010 and XNA 4.0.
+The game was developed with Microsoft XNA 4.0 for Xbox 360 and Microsoft Windows, this game has now been ported to MonoGame as a DesktopGL application.
 
 To run the game on the PC, simply build and run the solution
 Controls:

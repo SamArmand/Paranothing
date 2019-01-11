@@ -4,12 +4,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable, ISaveable
+    sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable, ISaveable
     {
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SpriteSheet _sheet;
-        private Vector2 _position;
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SpriteSheet _sheet;
+        Vector2 _position;
         public int X
         {
             get => (int)_position.X;
@@ -20,8 +20,9 @@ namespace Paranothing
             get => (int)_position.Y;
             private set => _position.Y = value;
         }
-        private readonly bool _startIntact;
-        private bool _intact;
+
+        readonly bool _startIntact;
+        bool _intact;
         public readonly Direction Direction;
 
         public Stairs(string saveString)
@@ -61,30 +62,15 @@ namespace Paranothing
 
         public void Reset() { }
 
-        public void Update(GameTime time)
-        {
-            _intact = _control.TimePeriod == TimePeriod.Past || _startIntact;
-        }
+        public void Update(GameTime time) => _intact = _control.TimePeriod == TimePeriod.Past || _startIntact;
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_intact ? 0 : 1), tint, 0f, new Vector2(), 1f, Direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, DrawLayer.Stairs);
-        }
+        public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_intact ? 0 : 1), tint, 0f, new Vector2(), 1f, Direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, DrawLayer.Stairs);
 
-        public bool IsSolid()
-        {
-            return _intact;
-        }
+        public bool IsSolid() => _intact;
 
-        public Rectangle GetBounds()
-        {
-            return new Rectangle((int)_position.X, (int)_position.Y, 146, 112);
-        }
+        public Rectangle GetBounds() => new Rectangle((int)_position.X, (int)_position.Y, 146, 112);
 
-        public Rectangle GetSmallBounds()
-        {
-            return new Rectangle((int)_position.X + (Direction == Direction.Left ? 0 : 24), (int)_position.Y + 22, 122, 190);
-        }
+        public Rectangle GetSmallBounds() => new Rectangle((int)_position.X + (Direction == Direction.Left ? 0 : 24), (int)_position.Y + 22, 122, 190);
 
         public void Interact()
         {

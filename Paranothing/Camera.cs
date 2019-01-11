@@ -2,9 +2,9 @@
 
 namespace Paranothing
 {
-    internal sealed class Camera : IUpdatable
+    sealed class Camera : IUpdatable
     {
-        private readonly GameController _control = GameController.GetInstance();
+        readonly GameController _control = GameController.GetInstance();
         public int X, Y;
         public readonly int Width;
         public readonly int Height;

@@ -7,37 +7,34 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Paranothing
 {
-    internal sealed class GameController
+    sealed class GameController
     {
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        readonly SoundManager _soundMan = SoundManager.Instance();
         public KeyboardState KeyState;
         public GamePadState PadState;
 
-        private List<IUpdatable> _updatableObjs;
-        private List<IDrawable> _drawableObjs;
-        private List<ICollideable> _collideableObjs;
+        List<IUpdatable> _updatableObjs;
+        List<IDrawable> _drawableObjs;
+        List<ICollideable> _collideableObjs;
         public Boy Player;
         public GameState State;
         public TimePeriod TimePeriod;
         public Level Level;
         public Camera Camera;
 
-        private bool _soundTriggered;
-        private Vector2 _soundPos;
-        private bool _showingDialogue;
-        private string _dialogue = "";
-        private int _dialogueTimer;
+        bool _soundTriggered;
+        Vector2 _soundPos;
+        bool _showingDialogue;
+        string _dialogue = "";
+        int _dialogueTimer;
 
-        private readonly Dictionary<string, Level> _levels;
+        readonly Dictionary<string, Level> _levels;
 
-        private static GameController _instance;
+        static GameController _instance;
 
-        public static GameController GetInstance()
-        {
-            return _instance ?? (_instance = new GameController());
-        }
+        public static GameController GetInstance() => _instance ?? (_instance = new GameController());
 
-        private GameController()
+        GameController()
         {
             _updatableObjs = new List<IUpdatable>();
             _drawableObjs = new List<IDrawable>();
@@ -47,10 +44,7 @@ namespace Paranothing
             TimePeriod = TimePeriod.Present;
         }
 
-        public void AddLevel(Level level)
-        {
-            _levels.Add(level.Name, level);
-        }
+        public void AddLevel(Level level) => _levels.Add(level.Name, level);
 
         public void GoToLevel(string levelName)
         {
@@ -132,21 +126,21 @@ namespace Paranothing
                 var colliding = Collides(obj.GetBounds(), Player.GetBounds());
                 switch (obj)
                 {
-                    case Shadows _:
-                        UpdateShadow((Shadows)obj, colliding);
+                    case Shadows shadow:
+                        UpdateShadow(shadow, colliding);
                         break;
-                    case Dialogue _:
-                        if (colliding) ((Dialogue)obj).Play();
+                    case Dialogue dialogue:
+                        if (colliding) dialogue.Play();
                         break;
-                    case DoorKey _:
+                    case DoorKey doorKey:
                         if (!colliding) continue;
 
-                        var key = DoorKey.GetKey(((DoorKey)obj).Name);
+                        var key = DoorKey.GetKey(doorKey.Name);
                         if (!key.RestrictTime || TimePeriod == key.InTime)
                             key.PickedUp = true;
                         break;
-                    case Button _:
-                        var button = (Button)obj;
+                    case Button button1:
+                        var button = button1;
                         var pressed = _collideableObjs.Any(
                             c => (c is Boy || TimePeriod == TimePeriod.Present && c is Shadows)
                                  && Collides(button.GetBounds(), c.GetBounds()));
@@ -154,41 +148,41 @@ namespace Paranothing
                             _soundMan.PlaySound("Button Press");
                         button.StepOn = pressed;
                         break;
-                    case Stairs _:
-                        UpdateStairs((Stairs)obj, colliding);
+                    case Stairs stairs:
+                        UpdateStairs(stairs, colliding);
                         break;
-                    case Chair _:
-                        UpdateChair((Chair)obj);
+                    case Chair chair:
+                        UpdateChair(chair);
                         break;
-                    case Wardrobe _:
-                        UpdateWardrobe((Wardrobe)obj, colliding);
+                    case Wardrobe wardrobe:
+                        UpdateWardrobe(wardrobe, colliding);
                         break;
-                    case Bookcase _:
-                        var bookcase = (Bookcase)obj;
+                    case Bookcase interactor:
+                        var bookcase = interactor;
                         if (!colliding || bookcase.State != Bookcase.BookcasesState.Open) continue;
 
                         Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Bookcase, false);
                         Player.ActionBubble.Show();
-                        Player.Interactor = (IInteractable)obj;
+                        Player.Interactor = interactor;
                         break;
-                    case Portrait _:
-                        UpdatePortrait((Portrait)obj, colliding);
+                    case Portrait portrait:
+                        UpdatePortrait(portrait, colliding);
                         break;
-                    case Floor _:
+                    case Floor floor:
                         if (Player.State == Boy.BoyState.StairsLeft || Player.State == Boy.BoyState.StairsRight) continue;
 
-                        while (Collides(Player.GetBounds(), ((Floor)obj).GetBounds())) Player.Y--;
+                        while (Collides(Player.GetBounds(), floor.GetBounds())) --Player.Y;
                         break;
-                    case Door _:
-                        var door = (Door)obj;
-                        if (!door.IsLocked() || !colliding || Player.State != Boy.BoyState.Walk) continue;
+                    case Door door1:
+                        var door = door1;
+                        if (!door.IsLocked || !colliding || Player.State != Boy.BoyState.Walk) continue;
 
                         if (Player.Direction == Direction.Left && Player.X > door.GetBounds().X
                             || Player.Direction == Direction.Right && Player.X < door.GetBounds().X)
                             Player.State = Boy.BoyState.PushingStill;
                         break;
                     default:
-                        if (!Player.ActionBubble.IsVisible() && !(Player.Interactor is Wardrobe && (Player.State == Boy.BoyState.PushingStill || Player.State == Boy.BoyState.PushWalk)))
+                        if (!Player.ActionBubble.IsVisible && !(Player.Interactor is Wardrobe && (Player.State == Boy.BoyState.PushingStill || Player.State == Boy.BoyState.PushWalk)))
                             Player.Interactor = null;
                         var collider = obj;
                         if (!colliding || Player.State != Boy.BoyState.Walk || !collider.IsSolid()) continue;
@@ -216,7 +210,7 @@ namespace Paranothing
             }
         }
 
-        private void UpdatePortrait(Portrait portrait, bool colliding)
+        void UpdatePortrait(Portrait portrait, bool colliding)
         {
             if (portrait.WasMoved && portrait.InTime != TimePeriod || !colliding ||
                 !(Player.X + Player.Width - 10 > portrait.X) ||
@@ -230,14 +224,14 @@ namespace Paranothing
             Player.Interactor = portrait;
         }
 
-        private void UpdateChair(Chair chair)
+        void UpdateChair(Chair chair)
         {
             if (chair.State != Chair.ChairsState.Falling) return;
 
             foreach (var c in _collideableObjs.OfType<Floor>().Where(c => Collides(c.GetBounds(), chair.GetBounds())))
             {
                 while (Collides(c.GetBounds(), chair.GetBounds()))
-                    chair.Y--;
+                    --chair.Y;
                 chair.State = Chair.ChairsState.Idle;
                 _soundPos = new Vector2(chair.X, chair.Y);
 
@@ -245,7 +239,7 @@ namespace Paranothing
             }
         }
 
-        private void UpdateWardrobe(Wardrobe wardrobe, bool colliding)
+        void UpdateWardrobe(Wardrobe wardrobe, bool colliding)
         {
             if (wardrobe.State == Wardrobe.WardrobeState.Opening)
                 _soundPos = new Vector2(wardrobe.X + wardrobe.GetBounds().Width / 2,
@@ -275,7 +269,7 @@ namespace Paranothing
                 Player.Interactor = wardrobe;
         }
 
-        private void UpdateStairs(Stairs stair, bool colliding)
+        void UpdateStairs(Stairs stair, bool colliding)
         {
             if (!stair.IsSolid() || !colliding) return;
 
@@ -328,7 +322,7 @@ namespace Paranothing
             }
         }
 
-        private void UpdateShadow(Shadows shadow, bool colliding)
+        void UpdateShadow(Shadows shadow, bool colliding)
         {
             if (_soundTriggered && TimePeriod == TimePeriod.Present && _soundPos.Y >= shadow.Y && _soundPos.Y <= shadow.Y + 81)
                 shadow.StalkNoise((int) _soundPos.X, (int) _soundPos.Y);
@@ -375,13 +369,13 @@ namespace Paranothing
 
         }
 
-        private static bool Collides(Rectangle box1, Rectangle box2)
+        static bool Collides(Rectangle box1, Rectangle box2)
         {
             var i = Rectangle.Intersect(box1, box2);
                 return i.Width != 0;
         }
 
-        private void AddObject(object obj)
+        void AddObject(object obj)
         {
             if (obj is IDrawable drawable) _drawableObjs.Add(drawable);
             if (obj is IUpdatable updatable) _updatableObjs.Add(updatable);

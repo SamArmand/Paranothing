@@ -6,35 +6,36 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Bookcase : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    sealed class Bookcase : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
     {
         # region Attributes
 
-        private readonly GameController _control = GameController.GetInstance();
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        private readonly SoundManager _soundMan = SoundManager.GetInstance();
+        readonly GameController _control = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+
+        readonly SoundManager _soundMan = SoundManager.Instance();
         //Collidable
-        private Vector2 _position;
-        private readonly string _button1;
-        private readonly string _button2;
-        private int _unlockTimer;
+        readonly Vector2 _position;
+        readonly string _button1;
+        readonly string _button2;
+        int _unlockTimer;
 
-        private int X => (int)_position.X;
+        int X => (int)_position.X;
 
-        private int Y => (int)_position.Y;
-        private Rectangle Bounds => new Rectangle(X, Y, 37, 75);
+        int Y => (int)_position.Y;
+        Rectangle Bounds => new Rectangle(X, Y, 37, 75);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
-        private int _frameTime;
-        private readonly int _frameLength;
-        private int _frame;
-        private string _animName;
-        private List<int> _animFrames;
+        readonly SpriteSheet _sheet;
+        int _frameTime;
+        readonly int _frameLength;
+        int _frame;
+        string _animName;
+        List<int> _animFrames;
         public enum BookcasesState { Closed, Closing, Opening, Open }
         public BookcasesState State;
 
-        private string Animation
+        string Animation
         {
             get => _animName;
             set
@@ -88,14 +89,9 @@ namespace Paranothing
         # region Methods
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public Rectangle GetBounds() => Bounds;
+
+        public bool IsSolid() => false;
 
         //Drawable
 
@@ -117,27 +113,8 @@ namespace Paranothing
                 _soundMan.PlaySound("Final Door Part 2");
                 _unlockTimer = 0;
             }
-            var b1Pushed = false;
-            var b2Pushed = false;
-            if (_button1 != "")
-            {
-                if (Button.GetKey(_button1)?.StepOn == true) b1Pushed = true;
-            }
-            else
-            {
-                b1Pushed = true;
-            }
 
-            if (_button2 != "")
-            {
-                if (Button.GetKey(_button2)?.StepOn == true) b2Pushed = true;
-            }
-            else
-            {
-                b2Pushed = true;
-            }
-
-            if (b1Pushed && b2Pushed)
+            if (_button1 == "" || Button.GetKey(_button1)?.StepOn == true && _button2 == "" || Button.GetKey(_button2)?.StepOn == true)
             {
                 if (State == BookcasesState.Closed)
                 {

@@ -6,32 +6,32 @@ using Microsoft.Xna.Framework.Media;
 
 namespace Paranothing
 {
-    internal sealed class GameTitle : GameBackground
+    sealed class GameTitle : GameBackground
     {
         # region Attribute
 
-        private Rectangle _topTextRect;
-        private Rectangle _bottomTextRect;
+        Rectangle _topTextRect;
+        Rectangle _bottomTextRect;
 
-        private int _menuIndex;
+        int _menuIndex;
         public int MenuSize = 5;
-        private GamePadState _prevPad;
-        private KeyboardState _prevKeys;
+        GamePadState _prevPad;
+        KeyboardState _prevKeys;
         public static bool ToggleSound = true;
-        private bool _toggleMusic = true;
-        private string _soundText = "ON";
-        private string _musicText = "ON";
+        bool _toggleMusic = true;
+        string _soundText = "ON";
+        string _musicText = "ON";
 
-        private readonly Color[] _colors = {Color.Yellow, Color.White, Color.White, Color.White, Color.White, Color.White};
+        readonly Color[] _colors = {Color.Yellow, Color.White, Color.White, Color.White, Color.White, Color.White};
 
-        private readonly Vector2 _choice1 = new Vector2(750, 300);
-        private readonly Vector2 _choice2 = new Vector2(750, 360);
-        private readonly Vector2 _choice3 = new Vector2(750, 420);
-        private readonly Vector2 _choice4 = new Vector2(750, 480);
-        private readonly Vector2 _choice5 = new Vector2(750, 540);
-        private readonly Vector2 _choice6 = new Vector2(750, 600);
+        readonly Vector2 _choice1 = new Vector2(750, 300);
+        readonly Vector2 _choice2 = new Vector2(750, 360);
+        readonly Vector2 _choice3 = new Vector2(750, 420);
+        readonly Vector2 _choice4 = new Vector2(750, 480);
+        readonly Vector2 _choice5 = new Vector2(750, 540);
+        readonly Vector2 _choice6 = new Vector2(750, 600);
 
-        private readonly GameController _control = GameController.GetInstance();
+        readonly GameController _control = GameController.GetInstance();
 
         public enum TitleState
         {

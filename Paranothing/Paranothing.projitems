@@ -3,208 +3,70 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>8681d1b4-70fa-4bf5-802a-959de029c8d0</SharedGUID>
+    <SharedGUID>4accda27-3494-4b3e-bccf-0c0a0845c794</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>projectName</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ICollideable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IDrawable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SpriteSheet.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GameController.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SpriteSheetManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SoundManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Boy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ActionBubble.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GameBackground.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GameTitle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Level.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bookcase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Boy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Button.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Chair.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IUpdatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IInteractable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Wardrobe.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Portrait.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ISaveable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Shadows.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dialogue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DoorKey.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Button.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Stairs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Floor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bookcase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Door.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DoorKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Floor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameBackground.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameTitle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICollideable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IDrawable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IInteractable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISaveable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IUpdatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Level.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Portrait.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rubble.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shadows.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SoundManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteSheet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteSheetManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Stairs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wardrobe.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <MonoGameContentReference Include="$(MSBuildThisFileDirectory)Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Content\">
     </Folder>
+    <Folder Include="$(MSBuildThisFileDirectory)Content\Levels\">
+    </Folder>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Content\white.xnb">
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\level format.txt" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\level1.lvl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\screenshot.xnb">
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\level2.lvl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\screenshot_for_menu.xnb">
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\level3.lvl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Button Press.xnb">
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\level4.lvl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Chair Drop.xnb">
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\tutorial.lvl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Death.xnb">
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Effects\Greyscale.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\GameThumbnail.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\controller.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Wardrobe.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Wallpaper.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\wall.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\stairs_intact.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\StaircasePresent.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\StaircasePast.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Staircase.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\sprite.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Shadow.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Rubble.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\PortraitWoman.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Portrait.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Key.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\floor.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Door_Final.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\door.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Chair.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Button.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\BruceSheet.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\Bruce.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sprites\actions.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Wardrobe Unlock.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Wardrobe Travel.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 6.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 5.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 4.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 3.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 2.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Step 1.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Shadow.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Pushing Wardrobe.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Portrait Travel.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Key.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Final Door Part 2.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Final Door Part 1.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Door Unlock.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\level format.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\level1.lvl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\level2.lvl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\level3.lvl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\level4.lvl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)levels\tutorial.lvl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Soundtrack.ogg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\Sounds\Soundtrack.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\TitleFont.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Content\GameFont.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 </Project>

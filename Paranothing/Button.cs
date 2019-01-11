@@ -5,19 +5,19 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal sealed class Button : IDrawable, ICollideable, ISaveable, IInteractable
+    sealed class Button : IDrawable, ICollideable, ISaveable, IInteractable
     {
         # region Attributes
 
-        private static readonly Dictionary<string, Button> ButtonsDict = new Dictionary<string, Button>();
+        static readonly Dictionary<string, Button> ButtonsDict = new Dictionary<string, Button>();
 
-        private readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
         //Collideable
-        private Vector2 _position;
-        private Rectangle Bounds => new Rectangle(X, Y, 16, 5);
+        Vector2 _position;
+        Rectangle Bounds => new Rectangle(X, Y, 16, 5);
 
         //Drawable
-        private readonly SpriteSheet _sheet;
+        readonly SpriteSheet _sheet;
         public bool StepOn;
 
         # endregion
@@ -58,34 +58,25 @@ namespace Paranothing
         # region Methods
 
         //Accessors & Mutators
-        private int X
+        int X
         {
             get => (int)_position.X;
             set => _position.X = value;
         }
 
-        private int Y
+        int Y
         {
             get => (int)_position.Y;
             set => _position.Y = value;
         }
 
         //Collideable
-        public Rectangle GetBounds()
-        {
-            return Bounds;
-        }
+        public Rectangle GetBounds() => Bounds;
 
-        public bool IsSolid()
-        {
-            return false;
-        }
+        public bool IsSolid() => false;
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            renderer.Draw(_sheet.Image, Bounds, StepOn ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+        public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, Bounds, StepOn ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
                 new Vector2(), SpriteEffects.None, DrawLayer.Key);
-        }
 
         //Interactive
         public void Interact()
@@ -107,7 +98,6 @@ namespace Paranothing
         //reset
         public void Reset()
         {
-
         }
     }
 }

@@ -3,11 +3,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    internal class GameBackground
+    class GameBackground
     {
         # region Attributes
 
-        private readonly Texture2D _backgroundTexture;
+        readonly Texture2D _backgroundTexture;
 
         # endregion
 
@@ -27,10 +27,7 @@ namespace Paranothing
         protected Rectangle BackgoundRectangle { get; }
 
         //Draw
-        protected void Draw(SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
-        }
+        protected void Draw(SpriteBatch spriteBatch) => spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
 
         # endregion
     }

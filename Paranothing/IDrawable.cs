@@ -7,7 +7,7 @@ namespace Paranothing
     /// An interface for any object that can be drawn.
     /// The implementing class decides how it handles the drawing, but it must implement the draw() method.
     /// </summary>
-    internal interface IDrawable
+    interface IDrawable
     {
         /// <summary>
         /// Draw the object
