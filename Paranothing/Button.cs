@@ -9,24 +9,24 @@ namespace Paranothing
     {
         # region Attributes
 
-        static readonly Dictionary<string, Button> ButtonsDict = new Dictionary<string, Button>();
+        static readonly Dictionary<string, Button> Buttons = new Dictionary<string, Button>();
 
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
         //Collideable
         Vector2 _position;
         Rectangle Bounds => new Rectangle(X, Y, 16, 5);
 
         //Drawable
         readonly SpriteSheet _sheet;
-        public bool StepOn;
+        internal bool StepOn;
 
         # endregion
 
         # region Constructors
 
-        public Button(string saveString)
+        internal Button(string saveString)
         {
-            _sheet = _sheetMan.GetSheet("button");
+            _sheet = _spriteSheetManager.GetSheet("button");
             StepOn = false;
             X = 0;
             Y = 0;
@@ -48,9 +48,9 @@ namespace Paranothing
                 if (line.StartsWith("name:", StringComparison.Ordinal)) name = line.Substring(5).Trim();
             }
 
-            if (ButtonsDict.ContainsKey(name))
-                ButtonsDict.Remove(name);
-            ButtonsDict.Add(name, this);
+            if (Buttons.ContainsKey(name))
+                Buttons.Remove(name);
+            Buttons.Add(name, this);
         }
 
         # endregion
@@ -83,14 +83,14 @@ namespace Paranothing
         {
         }
 
-        public static Button GetKey(string name)
+        internal static Button GetKey(string name)
         {
-            Button k;
-            if (ButtonsDict.ContainsKey(name))
-                ButtonsDict.TryGetValue(name, out k);
+            Button button;
+            if (Buttons.ContainsKey(name))
+                Buttons.TryGetValue(name, out button);
             else
-                k = null;
-            return k;
+                button = null;
+            return button;
         }
 
         #endregion

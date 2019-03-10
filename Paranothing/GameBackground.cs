@@ -3,32 +3,33 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    class GameBackground
-    {
-        # region Attributes
+	class GameBackground
+	{
+		# region Attributes
 
-        readonly Texture2D _backgroundTexture;
+		readonly Texture2D _backgroundTexture;
 
-        # endregion
+		# endregion
 
-        # region Constructor
+		# region Constructor
 
-        protected GameBackground(Texture2D inTexture, Rectangle inRect)
-        {
-            _backgroundTexture = inTexture;
-            BackgoundRectangle = inRect;
-        }
+		protected GameBackground(Texture2D inTexture, Rectangle inRect)
+		{
+			_backgroundTexture = inTexture;
+			BackgoundRectangle = inRect;
+		}
 
-        # endregion
+		# endregion
 
-        # region Methods
+		# region Methods
 
-        //Accessor
-        protected Rectangle BackgoundRectangle { get; }
+		//Accessor
+		protected Rectangle BackgoundRectangle { get; }
 
-        //Draw
-        protected void Draw(SpriteBatch spriteBatch) => spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
+		//Draw
+		protected void Draw(SpriteBatch spriteBatch) =>
+			spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
 
-        # endregion
-    }
+		# endregion
+	}
 }

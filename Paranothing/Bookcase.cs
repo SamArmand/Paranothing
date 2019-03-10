@@ -6,183 +6,200 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    sealed class Bookcase : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
-    {
-        # region Attributes
+	sealed class Bookcase : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+	{
+		# region Attributes
 
-        readonly GameController _control = GameController.GetInstance();
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+		readonly GameController _gameController = GameController.GetInstance();
+		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 
-        readonly SoundManager _soundMan = SoundManager.Instance();
-        //Collidable
-        readonly Vector2 _position;
-        readonly string _button1;
-        readonly string _button2;
-        int _unlockTimer;
+		readonly SoundManager _soundManager = SoundManager.Instance();
 
-        int X => (int)_position.X;
+		//Collidable
+		readonly Vector2 _position;
+		readonly string _button1, _button2;
+		int _unlockTimer;
 
-        int Y => (int)_position.Y;
-        Rectangle Bounds => new Rectangle(X, Y, 37, 75);
+		int X => (int) _position.X;
 
-        //Drawable
-        readonly SpriteSheet _sheet;
-        int _frameTime;
-        readonly int _frameLength;
-        int _frame;
-        string _animName;
-        List<int> _animFrames;
-        public enum BookcasesState { Closed, Closing, Opening, Open }
-        public BookcasesState State;
+		int Y => (int) _position.Y;
+		Rectangle Bounds => new Rectangle(X, Y, 37, 75);
 
-        string Animation
-        {
-            get => _animName;
-            set
-            {
-                if (!_sheet.HasAnimation(value) || _animName == value) return;
+		//Drawable
+		readonly SpriteSheet _sheet;
+		int _frameTime, _frame;
+		readonly int _frameLength;
+		string _animName;
+		List<int> _animFrames;
 
-                _animName = value;
-                _animFrames = _sheet.GetAnimation(_animName);
-                _frame = 0;
-                _frameTime = 0;
-            }
-        }
+		public enum BookcasesState
+		{
+			Closed,
+			Closing,
+			Opening,
+			Open
+		}
 
-        # endregion
+		internal BookcasesState State;
 
-        # region Constructors
+		string Animation
+		{
+			get => _animName;
+			set
+			{
+				if (!_sheet.HasAnimation(value) || _animName == value) return;
 
-        public Bookcase(string saveString)
-        {
-            _sheet = _sheetMan.GetSheet("bookcase");
-            var x = 0;
-            var y = 0;
-            _button1 = "";
-            _button2 = "";
-            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var lineNum = 0;
-            var line = "";
-            while (!line.StartsWith("EndBookcase", StringComparison.Ordinal) && lineNum < lines.Length)
-            {
-                line = lines[lineNum++];
-                if (line.StartsWith("x:", StringComparison.Ordinal))
-                    try { x = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+				_animName = value;
+				_animFrames = _sheet.GetAnimation(_animName);
+				_frame = 0;
+				_frameTime = 0;
+			}
+		}
 
-                if (line.StartsWith("y:", StringComparison.Ordinal))
-                    try { y = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+		# endregion
 
-                if (line.StartsWith("button1:", StringComparison.Ordinal)) _button1 = line.Substring(8).Trim();
-                if (line.StartsWith("button2:", StringComparison.Ordinal)) _button2 = line.Substring(8).Trim();
-            }
+		# region Constructors
 
-            Animation = "bookcaseopening";
-            State = BookcasesState.Open;
-            _position = new Vector2(x, y);
-            _frameLength = 100;
-        }
+		internal Bookcase(string saveString)
+		{
+			_sheet = _spriteSheetManager.GetSheet("bookcase");
+			var x = 0;
+			var y = 0;
+			_button1 = "";
+			_button2 = "";
+			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			var lineNum = 0;
+			var line = "";
+			while (!line.StartsWith("EndBookcase", StringComparison.Ordinal) && lineNum < lines.Length)
+			{
+				line = lines[lineNum++];
+				if (line.StartsWith("x:", StringComparison.Ordinal))
+					try
+					{
+						x = int.Parse(line.Substring(2));
+					}
+					catch (FormatException)
+					{
+					}
 
-        # endregion
+				if (line.StartsWith("y:", StringComparison.Ordinal))
+					try
+					{
+						y = int.Parse(line.Substring(2));
+					}
+					catch (FormatException)
+					{
+					}
 
-        # region Methods
+				if (line.StartsWith("button1:", StringComparison.Ordinal)) _button1 = line.Substring(8).Trim();
+				if (line.StartsWith("button2:", StringComparison.Ordinal)) _button2 = line.Substring(8).Trim();
+			}
 
-        //Collideable
-        public Rectangle GetBounds() => Bounds;
+			Animation = "bookcaseopening";
+			State = BookcasesState.Open;
+			_position = new Vector2(x, y);
+			_frameLength = 100;
+		}
 
-        public bool IsSolid() => false;
+		# endregion
 
-        //Drawable
+		# region Methods
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            Rectangle sprite = _sheet.GetSprite(_animFrames.ElementAt(_frame));
-            renderer.Draw(_sheet.Image, new Vector2(X, Y), sprite, tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.Wardrobe);
-        }
+		//Collideable
+		public Rectangle GetBounds() => Bounds;
 
-        //Updatable
-        public void Update(GameTime time)
-        {
-            var elapsed = time.ElapsedGameTime.Milliseconds;
-            _frameTime += elapsed;
-            if (State == BookcasesState.Opening)
-                _unlockTimer += elapsed;
-            if (_unlockTimer >= 450)
-            {
-                _soundMan.PlaySound("Final Door Part 2");
-                _unlockTimer = 0;
-            }
+		public bool IsSolid() => false;
 
-            if (_button1 == "" || Button.GetKey(_button1)?.StepOn == true && _button2 == "" || Button.GetKey(_button2)?.StepOn == true)
-            {
-                if (State == BookcasesState.Closed)
-                {
-                    State = BookcasesState.Opening;
-                    if (_unlockTimer == 0) _soundMan.PlaySound("Final Door Part 1");
-                }
-            }
-            else
-            {
-                _unlockTimer = 0;
-                State = State != BookcasesState.Closed ? BookcasesState.Closing : BookcasesState.Closed;
-            }
+		//Drawable
 
-            switch (State)
-            {
-                case BookcasesState.Open:
-                    Animation = "bookcaseopen";
-                    break;
-                case BookcasesState.Opening:
-                    if (_frame == 4)
-                    {
-                        Animation = "bookcaseopen";
-                        State = BookcasesState.Open;
-                    }
-                    else
-                    {
-                        Animation = "bookcaseopening";
-                    }
-                    break;
-                case BookcasesState.Closing:
-                    _unlockTimer = 0;
-                    if (Animation == "bookcaseclosing" && _frame == 4)
-                    {
-                        Animation = "close";
-                        State = BookcasesState.Closed;
-                    }
-                    else
-                    {
-                        Animation = "bookcaseclosing";
-                    }
-                    break;
-                case BookcasesState.Closed:
-                    _unlockTimer = 0;
-                    Animation = "bookcaseclosed";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, new Vector2(X, Y),
+																			_sheet.GetSprite(_animFrames
+																								.ElementAt(_frame)),
+																			tint,
+																			0f, new Vector2(), 1f, SpriteEffects.None,
+																			DrawLayer.Wardrobe);
 
-            if (_frameTime < _frameLength) return;
+		//Updatable
+		public void Update(GameTime time)
+		{
+			var elapsed = time.ElapsedGameTime.Milliseconds;
+			_frameTime += elapsed;
+			if (State == BookcasesState.Opening)
+				_unlockTimer += elapsed;
+			if (_unlockTimer >= 450)
+			{
+				_soundManager.PlaySound("Final Door Part 2");
+				_unlockTimer = 0;
+			}
 
-            _frameTime = 0;
-            _frame = (_frame + 1) % _animFrames.Count;
-        }
+			if (_button1 == "" || Button.GetKey(_button1)?.StepOn == true && _button2 == "" ||
+				Button.GetKey(_button2)?.StepOn == true)
+			{
+				if (State == BookcasesState.Closed)
+				{
+					State = BookcasesState.Opening;
+					if (_unlockTimer == 0) _soundManager.PlaySound("Final Door Part 1");
+				}
+			}
+			else
+			{
+				_unlockTimer = 0;
+				State = State != BookcasesState.Closed ? BookcasesState.Closing : BookcasesState.Closed;
+			}
 
-        public void Interact()
-        {
-            if (State == BookcasesState.Open)
-                Game1.EndGame = true;
-        }
+			switch (State)
+			{
+				case BookcasesState.Open:
+					Animation = "bookcaseopen";
+					break;
+				case BookcasesState.Opening:
+					if (_frame == 4)
+					{
+						Animation = "bookcaseopen";
+						State = BookcasesState.Open;
+					}
+					else
+						Animation = "bookcaseopening";
 
-        //reset
-        public void Reset()
-        {
-            if (_control.NextLevel())
-                _control.InitLevel(true);
-        }
+					break;
+				case BookcasesState.Closing:
+					_unlockTimer = 0;
+					if (Animation == "bookcaseclosing" && _frame == 4)
+					{
+						Animation = "close";
+						State = BookcasesState.Closed;
+					}
+					else
+						Animation = "bookcaseclosing";
 
-        # endregion
-    }
+					break;
+				case BookcasesState.Closed:
+					_unlockTimer = 0;
+					Animation = "bookcaseclosed";
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			if (_frameTime < _frameLength) return;
+
+			_frameTime = 0;
+			_frame = (_frame + 1) % _animFrames.Count;
+		}
+
+		public void Interact()
+		{
+			if (State == BookcasesState.Open)
+				Game1.EndGame = true;
+		}
+
+		//reset
+		public void Reset()
+		{
+			if (_gameController.NextLevel())
+				_gameController.InitLevel(true);
+		}
+
+		# endregion
+	}
 }

@@ -10,10 +10,10 @@ namespace Paranothing
     {
         # region Attributes
 
-        readonly GameController _control = GameController.GetInstance();
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly GameController _gameController = GameController.GetInstance();
+        readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
 
-        readonly SoundManager _soundMan = SoundManager.Instance();
+        readonly SoundManager _soundManager = SoundManager.Instance();
         //Collidable
         Vector2 _position;
         Rectangle Bounds => new Rectangle(X + 25, Y, 8, 75);
@@ -21,9 +21,7 @@ namespace Paranothing
         //Drawable
         readonly SpriteSheet _sheet;
         readonly bool _startLocked;
-        int _frameTime;
-        int _frameLength;
-        int _frame;
+        int _frameTime, _frameLength, _frame;
         string _animName;
         List<int> _animFrames;
 
@@ -36,9 +34,9 @@ namespace Paranothing
 
         # region Constructor
 
-        public Door(string saveString)
+        internal Door(string saveString)
         {
-            _sheet = _sheetMan.GetSheet("door");
+            _sheet = _sheetManager.GetSheet("door");
             X = 0;
             Y = 0;
             _startLocked = false;
@@ -66,12 +64,12 @@ namespace Paranothing
 
             if (IsLocked)
             {
-                Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
+                Animation = _gameController.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
                 _state = DoorsState.Closed;
             }
             else
             {
-                Animation = _control.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
+                Animation = _gameController.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
                 _state = DoorsState.Open;
             }
 
@@ -87,12 +85,12 @@ namespace Paranothing
 
             if (IsLocked)
             {
-                Animation = _control.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
+                Animation = _gameController.TimePeriod == TimePeriod.Present ? "doorclosedpresent" : "doorclosedpast";
                 _state = DoorsState.Closed;
             }
             else
             {
-                Animation = _control.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
+                Animation = _gameController.TimePeriod == TimePeriod.Present ? "dooropeningpresent" : "dooropeningpast";
                 _state = DoorsState.Open;
             }
         }
@@ -127,10 +125,10 @@ namespace Paranothing
         {
             IsLocked = false;
 
-            _soundMan.PlaySound("Door Unlock");
+            _soundManager.PlaySound("Door Unlock");
         }
 
-        public bool IsLocked { get; private set; }
+        internal bool IsLocked { get; private set; }
 
         //Collideable
         public Rectangle GetBounds() => Bounds;
@@ -152,7 +150,7 @@ namespace Paranothing
                 UnlockObj();
             }
 
-            var timeP = _control.TimePeriod == TimePeriod.Present ? "present" : "past";
+            var timeP = _gameController.TimePeriod == TimePeriod.Present ? "present" : "past";
             switch (_state)
             {
                 case DoorsState.Open:
@@ -165,9 +163,7 @@ namespace Paranothing
                         _state = DoorsState.Open;
                     }
                     else
-                    {
                         Animation = "dooropening" + timeP;
-                    }
 
                     break;
                 case DoorsState.Closed:

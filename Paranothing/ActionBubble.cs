@@ -4,95 +4,109 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    sealed class ActionBubble : IDrawable
-    {
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        public enum BubbleAction { None, Wardrobe, Push, Portrait, OldPortrait, Stair, Chair, Bookcase }
+	sealed class ActionBubble : IDrawable
+	{
+		readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
 
-        BubbleAction _action;
-        bool _negated;
-        readonly SpriteSheet _sheet;
-        public Boy Player { private get; set; }
-        public Chair Chair { set; private get; }
+		internal enum BubbleAction
+		{
+			None,
+			Wardrobe,
+			Push,
+			Portrait,
+			OldPortrait,
+			Stair,
+			Chair,
+			Bookcase
+		}
 
-        string _animName;
-        int _animIndex;
+		BubbleAction _action;
+		bool _negated;
+		readonly SpriteSheet _sheet;
+		internal Boy Player { private get; set; }
+		internal Chair Chair { set; private get; }
 
-        string Animation
-        {
-            set
-            {
-                if (!_sheet.HasAnimation(value) || _animName == value) return;
+		string _animName;
+		int _animIndex;
 
-                _animName = value;
-                _animIndex = _sheet.GetAnimation(_animName).First();
-            }
-        }
+		string Animation
+		{
+			set
+			{
+				if (!_sheet.HasAnimation(value) || _animName == value) return;
 
-        readonly int _negateInd;
+				_animName = value;
+				_animIndex = _sheet.GetAnimation(_animName).First();
+			}
+		}
 
-        public ActionBubble()
-        {
-            _sheet = _sheetMan.GetSheet("action");
-            _action = BubbleAction.None;
-            _negated = false;
-            if (_sheet.HasAnimation("negate")) _negateInd = _sheet.GetAnimation("negate").First();
-        }
+		readonly int _negateInd;
 
-        public bool IsVisible { get; private set; }
+		internal ActionBubble()
+		{
+			_sheet = _sheetManager.GetSheet("action");
+			_action = BubbleAction.None;
+			_negated = false;
+			if (_sheet.HasAnimation("negate")) _negateInd = _sheet.GetAnimation("negate").First();
+		}
 
-        public void Show() => IsVisible = true;
+		internal bool IsVisible { get; private set; }
 
-        public void Hide() => IsVisible = false;
+		internal void Show() => IsVisible = true;
 
-        public void SetAction(BubbleAction action, bool negated)
-        {
-            _action = action;
-            _negated = negated;
-            switch (action)
-            {
-                case BubbleAction.Wardrobe:
-                    Animation = "wardrobe";
-                    break;
-                case BubbleAction.Portrait:
-                    Animation = "portrait";
-                    break;
-                case BubbleAction.OldPortrait:
-                    Animation = "oldportrait";
-                    break;
-                case BubbleAction.Push:
-                    Animation = "push";
-                    break;
-                case BubbleAction.Chair:
-                    Animation = "chair";
-                    break;
-                case BubbleAction.Stair:
-                    Animation = "stair";
-                    break;
-                case BubbleAction.Bookcase:
-                    Animation = "bookcase";
-                    break;
-                case BubbleAction.None:
-                    break;
-                default:
-                    Animation = "negate";
-                    break;
-            }
-        }
+		internal void Hide() => IsVisible = false;
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            if (!IsVisible) return;
+		internal void SetAction(BubbleAction action, bool negated)
+		{
+			_action = action;
+			_negated = negated;
+			switch (action)
+			{
+				case BubbleAction.Wardrobe:
+					Animation = "wardrobe";
+					break;
+				case BubbleAction.Portrait:
+					Animation = "portrait";
+					break;
+				case BubbleAction.OldPortrait:
+					Animation = "oldportrait";
+					break;
+				case BubbleAction.Push:
+					Animation = "push";
+					break;
+				case BubbleAction.Chair:
+					Animation = "chair";
+					break;
+				case BubbleAction.Stair:
+					Animation = "stair";
+					break;
+				case BubbleAction.Bookcase:
+					Animation = "bookcase";
+					break;
+				case BubbleAction.None:
+					break;
+				default:
+					Animation = "negate";
+					break;
+			}
+		}
 
-            var drawPos = new Vector2();
-            if (_action != BubbleAction.Chair && Player != null)
-                drawPos = new Vector2(Player.X + 11, Player.Y - 27);
-            else if (Chair != null)
-                drawPos = new Vector2(Chair.X + 11, Chair.Y - 32);
-            renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(0), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.ActionBubble);
-            renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(_animIndex), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.ActionBubble - 0.001f);
-            if (_negated)
-                renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(_negateInd), tint, 0f, new Vector2(), 1f, SpriteEffects.None, DrawLayer.ActionBubble - 0.002f);
-        }
-    }
+		public void Draw(SpriteBatch renderer, Color tint)
+		{
+			if (!IsVisible) return;
+
+			var drawPos = new Vector2();
+			if (_action != BubbleAction.Chair && Player != null)
+				drawPos = new Vector2(Player.X + 11, Player.Y - 27);
+			else if (Chair != null)
+				drawPos = new Vector2(Chair.X + 11, Chair.Y - 32);
+			renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(0), tint, 0f, new Vector2(), 1f, SpriteEffects.None,
+						  DrawLayer.ActionBubble);
+			renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(_animIndex), tint, 0f, new Vector2(), 1f,
+						  SpriteEffects.None, DrawLayer.ActionBubble - 0.001f);
+			if (_negated)
+				renderer.Draw(_sheet.Image, drawPos, _sheet.GetSprite(_negateInd), tint, 0f, new Vector2(), 1f,
+							  SpriteEffects.None, DrawLayer.ActionBubble - 0.002f);
+		}
+	}
 }

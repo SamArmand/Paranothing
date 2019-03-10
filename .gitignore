@@ -82,6 +82,7 @@
 # FAKE - F# Make
 # JetBrains Rider
 .idea/
+.vs/
 # CodeRush
 # Python Tools for Visual Studio (PTVS)
 # Cake - Uncomment if you are using it

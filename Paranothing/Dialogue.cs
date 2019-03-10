@@ -5,7 +5,7 @@ namespace Paranothing
 {
     sealed class Dialogue : ICollideable, IUpdatable, ISaveable
     {
-        readonly GameController _control = GameController.GetInstance();
+        readonly GameController _gameController = GameController.GetInstance();
         bool Played { get; set; }
         readonly string _text;
         Vector2 _position;
@@ -24,7 +24,7 @@ namespace Paranothing
 
         Rectangle Bounds => new Rectangle(X, Y, 20, 20);
 
-        public Dialogue(string saveString)
+        internal Dialogue(string saveString)
         {
             X = 0;
             Y = 0;
@@ -54,19 +54,16 @@ namespace Paranothing
 
         public bool IsSolid() => false;
 
-        public void Play()
+        internal void Play()
         {
             if (Played) return;
 
-            _control.ShowDialogue(_text);
+            _gameController.ShowDialogue(_text);
             Played = true;
         }
 
         public void Update(GameTime time) {}
 
-        public void Reset()
-        {
-            Played = false;
-        }
+        public void Reset() => Played = false;
     }
 }

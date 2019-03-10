@@ -2,29 +2,29 @@
 
 namespace Paranothing
 {
-    sealed class SpriteSheetManager
-    {
-        readonly Dictionary<string, SpriteSheet> _sheetDict;
-        static SpriteSheetManager _instance;
+	sealed class SpriteSheetManager
+	{
+		readonly Dictionary<string, SpriteSheet> _spriteSheets;
+		static SpriteSheetManager _instance;
 
-        public static SpriteSheetManager GetInstance() => _instance ?? (_instance = new SpriteSheetManager());
+		internal static SpriteSheetManager GetInstance() => _instance ?? (_instance = new SpriteSheetManager());
 
-        SpriteSheetManager() => _sheetDict = new Dictionary<string, SpriteSheet>();
+		SpriteSheetManager() => _spriteSheets = new Dictionary<string, SpriteSheet>();
 
-        public SpriteSheet GetSheet(string name)
-        {
-            SpriteSheet sheet;
-            if (_sheetDict.ContainsKey(name))
-                _sheetDict.TryGetValue(name, out sheet);
-            else
-                sheet = null;
-            return sheet;
-        }
+		internal SpriteSheet GetSheet(string name)
+		{
+			SpriteSheet sheet;
+			if (_spriteSheets.ContainsKey(name))
+				_spriteSheets.TryGetValue(name, out sheet);
+			else
+				sheet = null;
+			return sheet;
+		}
 
-        public void AddSheet(string name, SpriteSheet sheet)
-        {
-            if (!_sheetDict.ContainsKey(name))
-                _sheetDict.Add(name, sheet);
-        }
-    }
+		internal void AddSheet(string name, SpriteSheet sheet)
+		{
+			if (!_spriteSheets.ContainsKey(name))
+				_spriteSheets.Add(name, sheet);
+		}
+	}
 }

@@ -5,131 +5,144 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
-    {
-        # region Attributes
+	sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
+	{
+		# region Attributes
 
-        static readonly Dictionary<string, DoorKey> KeyDict = new Dictionary<string, DoorKey>();
-        readonly GameController _control = GameController.GetInstance();
+		static readonly Dictionary<string, DoorKey> DoorKeys = new Dictionary<string, DoorKey>();
+		readonly GameController _gameController = GameController.GetInstance();
 
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
-        //Collideable
-        Vector2 _position;
-        Rectangle Bounds => new Rectangle(X, Y, 16, 9);
+		readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
 
-        //Drawable
-        readonly SpriteSheet _sheet;
-        public bool RestrictTime { get; }
-        public TimePeriod InTime { get; }
-        public bool PickedUp;
+		//Collideable
+		Vector2 _position;
+		Rectangle Bounds => new Rectangle(X, Y, 16, 9);
 
-        public string Name { get; }
+		//Drawable
+		readonly SpriteSheet _sheet;
+		internal bool RestrictTime { get; }
+		internal TimePeriod InTime { get; }
+		internal bool PickedUp { get; set; }
 
-        # endregion
+		internal string Name { get; }
 
-        # region Constructor
+		# endregion
 
-        public DoorKey(string saveString)
-        {
-            _sheet = _sheetMan.GetSheet("key");
-            PickedUp = false;
-            RestrictTime = false;
-            InTime = TimePeriod.Present;
-            X = 0;
-            Y = 0;
-            Name = "Key";
-            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var lineNum = 0;
-            var line = "";
-            while (!line.StartsWith("EndKey", StringComparison.Ordinal) && lineNum < lines.Length)
-            {
-                line = lines[lineNum++];
-                if (line.StartsWith("x:", StringComparison.Ordinal))
-                    try { X = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+		# region Constructor
 
-                if (line.StartsWith("y:", StringComparison.Ordinal))
-                    try { Y = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+		internal DoorKey(string saveString)
+		{
+			_sheet = _sheetManager.GetSheet("key");
+			PickedUp = false;
+			RestrictTime = false;
+			InTime = TimePeriod.Present;
+			X = 0;
+			Y = 0;
+			Name = "Key";
+			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			var lineNum = 0;
+			var line = "";
+			while (!line.StartsWith("EndKey", StringComparison.Ordinal) && lineNum < lines.Length)
+			{
+				line = lines[lineNum++];
+				if (line.StartsWith("x:", StringComparison.Ordinal))
+					try
+					{
+						X = int.Parse(line.Substring(2));
+					}
+					catch (FormatException)
+					{
+					}
 
-                if (line.StartsWith("restrictTime:", StringComparison.Ordinal))
-                {
-                    RestrictTime = true;
-                    var t = line.Substring(13).Trim();
-                    switch (t)
-                    {
-                        case "Present":
-                            InTime = TimePeriod.Present;
-                            break;
-                        case "Past":
-                            InTime = TimePeriod.Past;
-                            break;
-                        case "FarPast":
-                            InTime = TimePeriod.FarPast;
-                            break;
-                        default:
-                            RestrictTime = false;
-                            break;
-                    }
-                }
-                if (line.StartsWith("name:", StringComparison.Ordinal)) Name = line.Substring(5).Trim();
-            }
+				if (line.StartsWith("y:", StringComparison.Ordinal))
+					try
+					{
+						Y = int.Parse(line.Substring(2));
+					}
+					catch (FormatException)
+					{
+					}
 
-            if (KeyDict.ContainsKey(Name))
-                KeyDict.Remove(Name);
-            KeyDict.Add(Name, this);
-        }
+				if (line.StartsWith("restrictTime:", StringComparison.Ordinal))
+				{
+					RestrictTime = true;
+					var t = line.Substring(13).Trim();
+					switch (t)
+					{
+						case "Present":
+							InTime = TimePeriod.Present;
+							break;
+						case "Past":
+							InTime = TimePeriod.Past;
+							break;
+						case "FarPast":
+							InTime = TimePeriod.FarPast;
+							break;
+						default:
+							RestrictTime = false;
+							break;
+					}
+				}
 
-        public void Reset() => PickedUp = false;
+				if (line.StartsWith("name:", StringComparison.Ordinal)) Name = line.Substring(5).Trim();
+			}
 
-        # endregion
+			if (DoorKeys.ContainsKey(Name))
+				DoorKeys.Remove(Name);
+			DoorKeys.Add(Name, this);
+		}
 
-        # region Methods
+		public void Reset() => PickedUp = false;
 
-        //Accessors & Mutators
-        int X
-        {
-            get => (int)_position.X;
-            set => _position.X = value;
-        }
+		# endregion
 
-        int Y
-        {
-            get => (int)_position.Y;
-            set => _position.Y = value;
-        }
+		# region Methods
 
-        //Collideable
-        public Rectangle GetBounds() => Bounds;
+		//Accessors & Mutators
+		int X
+		{
+			get => (int) _position.X;
+			set => _position.X = value;
+		}
 
-        public bool IsSolid() => false;
+		int Y
+		{
+			get => (int) _position.Y;
+			set => _position.Y = value;
+		}
 
-        //Drawable
+		//Collideable
+		public Rectangle GetBounds() => Bounds;
 
-        public void Draw(SpriteBatch renderer, Color tint)
-        {
-            if (PickedUp || (RestrictTime && _control.TimePeriod != InTime)) return;
+		public bool IsSolid() => false;
 
-            renderer.Draw(_sheet.Image, Bounds,
-                _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
-                new Vector2(), SpriteEffects.None, DrawLayer.Key);
-        }
+		//Drawable
 
-        //Interactive
-        public void Interact()
-        {
-        }
+		public void Draw(SpriteBatch renderer, Color tint)
+		{
+			if (PickedUp || (RestrictTime && _gameController.TimePeriod != InTime)) return;
 
-        public static DoorKey GetKey(string name)
-        {
-            DoorKey k;
-            if (KeyDict.ContainsKey(name))
-                KeyDict.TryGetValue(name, out k);
-            else
-                k = null;
-            return k;
-        }
+			renderer.Draw(_sheet.Image, Bounds,
+						  _gameController.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint,
+						  0f,
+						  new Vector2(), SpriteEffects.None, DrawLayer.Key);
+		}
 
-        #endregion
-    }
+		//Interactive
+		public void Interact()
+		{
+		}
+
+		internal static DoorKey GetKey(string name)
+		{
+			DoorKey doorKey;
+			if (DoorKeys.ContainsKey(name))
+				DoorKeys.TryGetValue(name, out doorKey);
+			else
+				doorKey = null;
+			return doorKey;
+		}
+
+		#endregion
+	}
 }

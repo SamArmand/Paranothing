@@ -8,9 +8,9 @@ namespace Paranothing
     {
         # region Attributes
 
-        readonly GameController _control = GameController.GetInstance();
+        readonly GameController _gameController = GameController.GetInstance();
 
-        readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
+        readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
         //Collidable
         readonly Vector2 _startPos;
         Vector2 _positionPres;
@@ -25,7 +25,8 @@ namespace Paranothing
 
         //Drawable
         readonly SpriteSheet _sheet;
-        public enum ChairsState { Idle, Falling, Moving }
+
+        internal enum ChairsState { Idle, Falling, Moving }
 
         internal ChairsState State;
         readonly ActionBubble _bubble = new ActionBubble();
@@ -36,7 +37,7 @@ namespace Paranothing
 
         internal Chair(string saveString)
         {
-            _sheet = _sheetMan.GetSheet("chair");
+            _sheet = _spriteSheetManager.GetSheet("chair");
             var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var x = 0;
             var y = 0;
@@ -70,7 +71,7 @@ namespace Paranothing
         {
             get
             {
-                switch (_control.TimePeriod)
+                switch (_gameController.TimePeriod)
                 {
                     case TimePeriod.FarPast:
                         return (int)_positionPast2.X;
@@ -84,7 +85,7 @@ namespace Paranothing
             }
             private set
             {
-                switch (_control.TimePeriod)
+                switch (_gameController.TimePeriod)
                 {
                     case TimePeriod.FarPast:
                         _positionPast2.X = value;
@@ -103,11 +104,11 @@ namespace Paranothing
                 }
             }
         }
-        public int Y
+        internal int Y
         {
             get
             {
-                switch (_control.TimePeriod)
+                switch (_gameController.TimePeriod)
                 {
                     case TimePeriod.FarPast:
                         return (int)_positionPast2.Y;
@@ -121,7 +122,7 @@ namespace Paranothing
             }
             set
             {
-                switch (_control.TimePeriod)
+                switch (_gameController.TimePeriod)
                 {
                     case TimePeriod.FarPast:
                         _positionPast2.Y = value;
@@ -148,7 +149,7 @@ namespace Paranothing
         public void Draw(SpriteBatch renderer, Color tint)
         {
             renderer.Draw(_sheet.Image, new Vector2(X, Y),
-                _control.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+                _gameController.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
                 new Vector2(), 1f, SpriteEffects.None, DrawLayer.Chairs);
             _bubble.Draw(renderer, tint);
         }
@@ -156,7 +157,7 @@ namespace Paranothing
         //Updatable
         public void Update(GameTime time)
         {
-            var player = _control.Player;
+            var player = _gameController.Player;
             switch (State)
             {
                 case ChairsState.Idle:
@@ -173,9 +174,7 @@ namespace Paranothing
                                 _bubble.SetAction(ActionBubble.BubbleAction.Chair, false);
                             }
                             else
-                            {
                                 _bubble.Hide();
-                            }
                         }
                     }
                     else
@@ -199,7 +198,7 @@ namespace Paranothing
                         _moveTime = 0;
 
                         var smallerBound = new Rectangle(X + 2, Y + 2, Bounds.Width - 4, Bounds.Height - 4);
-                        if (_control.CollidingWithSolid(smallerBound, false))
+                        if (_gameController.CollidingWithSolid(smallerBound, false))
                         {
                             X -= _tX * Speed;
                             Y -= _tY * Speed;
@@ -213,7 +212,7 @@ namespace Paranothing
             }
         }
 
-        public void Move(Direction direction)
+        internal void Move(Direction direction)
         {
             switch (direction)
             {
