@@ -10,8 +10,8 @@ namespace Paranothing
 	{
 		# region Attribute
 
-		Rectangle _topTextRect,
-				  _bottomTextRect;
+		Rectangle _topTextRect = new Rectangle(),
+				  _bottomTextRect = new Rectangle();
 
 		int _menuIndex;
 		internal int MenuSize = 5;
@@ -54,13 +54,11 @@ namespace Paranothing
 		internal GameTitle(Texture2D inTexture, Rectangle inRect)
 			: base(inTexture, inRect)
 		{
-			_topTextRect = new Rectangle();
-			_bottomTextRect = new Rectangle();
 		}
 
-		# endregion
+		#endregion
 
-		# region Methods
+		#region Methods
 
 		//Accessors
 		internal Rectangle TopTextRectangle => _topTextRect;
@@ -68,6 +66,7 @@ namespace Paranothing
 		internal void SetTopTextRectangle(Vector2 inVec)
 		{
 			var (x, y) = inVec;
+
 			_topTextRect.X = BackgoundRectangle.Center.X - (int) (x / 2);
 			_topTextRect.Y = BackgoundRectangle.Top;
 			_topTextRect.Width = (int) x;
@@ -124,6 +123,7 @@ namespace Paranothing
 								_control.InitLevel(false);
 
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 1:
 								MenuSize = 6;
@@ -156,26 +156,31 @@ namespace Paranothing
 								_control.GoToLevel("Tutorial");
 								_control.InitLevel(false);
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 1:
 								_control.GoToLevel("Level1");
 								_control.InitLevel(false);
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 2:
 								_control.GoToLevel("Level2");
 								_control.InitLevel(false);
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 3:
 								_control.GoToLevel("Level3");
 								_control.InitLevel(false);
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 4:
 								_control.GoToLevel("Level4");
 								_control.InitLevel(false);
 								game.GameState = GameState.Game;
+								game.ResetGame();
 								break;
 							case 5:
 								MenuSize = 5;

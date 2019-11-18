@@ -10,12 +10,11 @@ namespace Paranothing
 	sealed class Boy : IDrawable, IUpdatable, ICollideable
 	{
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 		readonly SoundManager _soundManager = SoundManager.Instance();
-		readonly SpriteSheet _sheet;
-		int _frame;
-		int _frameLength;
-		int _frameTime;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("boy");
+		int _frame = 0;
+		int _frameLength = 60;
+		int _frameTime = 0;
 		string _animName;
 		List<int> _animFrames;
 
@@ -33,11 +32,11 @@ namespace Paranothing
 			}
 		}
 
-		float _drawLayer;
+		float _drawLayer = DrawLayer.Player;
 		float _moveSpeedX, _moveSpeedY; // Pixels per animation frame
 		Vector2 _position;
-		internal int Width;
-		int _height;
+		internal int Width = 38;
+		int _height = 58;
 
 		internal float X
 		{
@@ -65,31 +64,21 @@ namespace Paranothing
 			Die
 		}
 
-		internal BoyState State;
-		internal Direction Direction { get; set; }
+		internal BoyState State = BoyState.Idle;
+		internal Direction Direction { get; set; } = Direction.Right;
 		internal ActionBubble ActionBubble { get; }
-		Vector2 _teleportTo;
+		Vector2 _teleportTo = new Vector2();
 		TimePeriod _timeTravelTo;
 		public Chair NearestChair { get; set; }
 		public IInteractable Interactor;
 
 		public Boy(float x, float y, ActionBubble actionBubble)
 		{
-			_sheet = _spriteSheetManager.GetSheet("boy");
-			_frame = 0;
-			_frameTime = 0;
-			_frameLength = 60;
 			_position = new Vector2(x, y);
-			Width = 38;
-			_height = 58;
-			State = BoyState.Idle;
 			Animation = "stand";
-			Direction = Direction.Right;
 			ActionBubble = actionBubble;
-			actionBubble.Player = this;
-			actionBubble.Show();
-			_teleportTo = new Vector2();
-			_drawLayer = DrawLayer.Player;
+			ActionBubble.Boy = this;
+			ActionBubble.Show();
 		}
 
 		public void Reset()
@@ -103,7 +92,7 @@ namespace Paranothing
 			State = BoyState.Idle;
 			Animation = "stand";
 			Direction = Direction.Right;
-			ActionBubble.Player = this;
+			ActionBubble.Boy = this;
 			ActionBubble.Show();
 			_teleportTo = new Vector2();
 			NearestChair = null;
@@ -181,7 +170,7 @@ namespace Paranothing
 						control.PadState.IsButtonDown(Buttons.LeftThumbstickRight))
 					{
 						if (State != BoyState.PushWalk && State != BoyState.PushingStill ||
-							Interactor != null && ((Wardrobe) Interactor).X > X)
+							Interactor != null && ((Wardrobe)Interactor).X > X)
 							Direction = Direction.Right;
 						if (State == BoyState.Idle)
 							State = BoyState.Walk;
@@ -192,7 +181,7 @@ namespace Paranothing
 							 control.PadState.IsButtonDown(Buttons.LeftThumbstickLeft))
 					{
 						if (State != BoyState.PushWalk && State != BoyState.PushingStill ||
-							Interactor != null && ((Wardrobe) Interactor).X < X)
+							Interactor != null && ((Wardrobe)Interactor).X < X)
 							Direction = Direction.Left;
 						if (State == BoyState.Idle)
 							State = BoyState.Walk;
@@ -304,7 +293,7 @@ namespace Paranothing
 					if (Animation == "walk" || Animation == "stand")
 					{
 						Animation = "enterwardrobe";
-						var targetWr = ((Wardrobe) Interactor).GetLinkedWr();
+						var targetWr = ((Wardrobe)Interactor).GetLinkedWr();
 						if (targetWr != null)
 						{
 							var (x, y, _, _) = targetWr.GetBounds();
@@ -331,11 +320,11 @@ namespace Paranothing
 					_moveSpeedY = 0;
 					if (Animation == "walk" || Animation == "stand")
 					{
-						var p = (Portrait) Interactor;
+						var p = (Portrait)Interactor;
 						_teleportTo = p.WasMoved ? p.MovedPos : new Vector2();
 						Animation = "enterportrait";
 						if (_gameController.TimePeriod == TimePeriod.Present)
-							_timeTravelTo = ((Portrait) Interactor).SendTime;
+							_timeTravelTo = ((Portrait)Interactor).SendTime;
 						Interactor = null;
 					}
 
@@ -384,9 +373,9 @@ namespace Paranothing
 			X += _moveSpeedX * flip;
 			if (State == BoyState.PushWalk && Animation == "push" && Interactor != null)
 			{
-				var w = (Wardrobe) Interactor;
+				var w = (Wardrobe)Interactor;
 				if (!_gameController.CollidingWithSolid(w.PushBox, false))
-					w.X += (int) (_moveSpeedX * flip);
+					w.X += (int)(_moveSpeedX * flip);
 				else
 					X -= _moveSpeedX * flip;
 			}
@@ -402,7 +391,7 @@ namespace Paranothing
 			_frame = (_frame + 1) % _animFrames.Count;
 		}
 
-		public Rectangle GetBounds() => new Rectangle((int) _position.X, (int) _position.Y, Width, _height);
+		public Rectangle GetBounds() => new Rectangle((int)_position.X, (int)_position.Y, Width, _height);
 
 		public bool IsSolid() => true;
 	}

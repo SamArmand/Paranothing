@@ -24,7 +24,7 @@ namespace Paranothing
 		}
 
 		readonly SpriteSheet _sheet;
-		internal bool WasMoved { get; }
+		internal bool WasMoved { get; } = false;
 		internal Vector2 MovedPos;
 		internal TimePeriod InTime { get; }
 		internal TimePeriod SendTime { get; }
@@ -33,7 +33,6 @@ namespace Paranothing
 		{
 			_sheet = _spriteSheetManager.GetSheet("portrait");
 			SendTime = TimePeriod.Past;
-			WasMoved = false;
 			ParseString(saveString, str);
 		}
 
@@ -41,7 +40,6 @@ namespace Paranothing
 		internal Portrait(string saveString, TimePeriod period)
 		{
 			_sheet = _spriteSheetManager.GetSheet("portrait");
-			WasMoved = false;
 			switch (period)
 			{
 				case TimePeriod.Present:

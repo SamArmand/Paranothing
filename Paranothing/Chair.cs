@@ -10,7 +10,6 @@ namespace Paranothing
 
         readonly GameController _gameController = GameController.GetInstance();
 
-        readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
         //Collidable
         readonly Vector2 _startPos;
         Vector2 _positionPres;
@@ -24,7 +23,7 @@ namespace Paranothing
         Rectangle Bounds => new Rectangle(X, Y, 40, 52);
 
         //Drawable
-        readonly SpriteSheet _sheet;
+        readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("chair");
 
         internal enum ChairsState { Idle, Falling, Moving }
 
@@ -37,7 +36,6 @@ namespace Paranothing
 
         internal Chair(string saveString)
         {
-            _sheet = _spriteSheetManager.GetSheet("chair");
             var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var x = 0;
             var y = 0;
@@ -71,18 +69,14 @@ namespace Paranothing
         {
             get
             {
-                switch (_gameController.TimePeriod)
-                {
-                    case TimePeriod.FarPast:
-                        return (int)_positionPast2.X;
-                    case TimePeriod.Past:
-                        return (int)_positionPast1.X;
-                    case TimePeriod.Present:
-                        return (int)_positionPres.X;
-                    default:
-                        return 0;
-                }
-            }
+				return _gameController.TimePeriod switch
+				{
+					TimePeriod.FarPast => (int)_positionPast2.X,
+					TimePeriod.Past => (int)_positionPast1.X,
+					TimePeriod.Present => (int)_positionPres.X,
+					_ => 0,
+				};
+			}
             private set
             {
                 switch (_gameController.TimePeriod)
@@ -108,18 +102,14 @@ namespace Paranothing
         {
             get
             {
-                switch (_gameController.TimePeriod)
-                {
-                    case TimePeriod.FarPast:
-                        return (int)_positionPast2.Y;
-                    case TimePeriod.Past:
-                        return (int)_positionPast1.Y;
-                    case TimePeriod.Present:
-                        return (int)_positionPres.Y;
-                    default:
-                        return 0;
-                }
-            }
+				return _gameController.TimePeriod switch
+				{
+					TimePeriod.FarPast => (int)_positionPast2.Y,
+					TimePeriod.Past => (int)_positionPast1.Y,
+					TimePeriod.Present => (int)_positionPres.Y,
+					_ => 0,
+				};
+			}
             set
             {
                 switch (_gameController.TimePeriod)

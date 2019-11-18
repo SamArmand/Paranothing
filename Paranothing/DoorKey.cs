@@ -12,19 +12,17 @@ namespace Paranothing
 		static readonly Dictionary<string, DoorKey> DoorKeys = new Dictionary<string, DoorKey>();
 		readonly GameController _gameController = GameController.GetInstance();
 
-		readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
-
 		//Collideable
 		Vector2 _position;
 		Rectangle Bounds => new Rectangle(X, Y, 16, 9);
 
 		//Drawable
-		readonly SpriteSheet _sheet;
-		internal bool RestrictTime { get; }
-		internal TimePeriod InTime { get; }
-		internal bool PickedUp { get; set; }
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("key");
+		internal bool RestrictTime { get; } = false;
+		internal TimePeriod InTime { get; } = TimePeriod.Present;
+		internal bool PickedUp { get; set; } = false;
 
-		internal string Name { get; }
+		internal string Name { get; } = "Key";
 
 		# endregion
 
@@ -32,13 +30,8 @@ namespace Paranothing
 
 		internal DoorKey(string saveString)
 		{
-			_sheet = _sheetManager.GetSheet("key");
-			PickedUp = false;
-			RestrictTime = false;
-			InTime = TimePeriod.Present;
 			X = 0;
 			Y = 0;
-			Name = "Key";
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var lineNum = 0;
 			var line = "";

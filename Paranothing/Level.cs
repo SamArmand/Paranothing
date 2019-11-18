@@ -18,13 +18,9 @@ namespace Paranothing
 		internal string Name { get; private set; }
 		internal string NextLevel { get; private set; }
 		internal TimePeriod StartTime;
-		List<ISaveable> _savedObjs;
+		List<ISaveable> _savedObjs = new List<ISaveable>();
 
-		public Level(string filename)
-		{
-			_savedObjs = new List<ISaveable>();
-			LoadFromFile(filename);
-		}
+		public Level(string filename) => LoadFromFile(filename);
 
 		void AddObj(ISaveable obj) => _savedObjs.Add(obj);
 
@@ -36,7 +32,7 @@ namespace Paranothing
 			{
 				CreateFromString(new StreamReader(TitleContainer.OpenStream(filename)).ReadToEnd());
 			}
-			catch (FileNotFoundException)
+			catch (Exception)
 			{
 			}
 		}
@@ -73,20 +69,12 @@ namespace Paranothing
 					Height = int.Parse(line.Substring(7));
 				if (line.StartsWith("startTime:", StringComparison.Ordinal))
 				{
-					StartTime = TimePeriod.Present;
-					var time = line.Substring(10).Trim();
-					switch (time)
+					StartTime = line.Substring(10).Trim() switch
 					{
-						case "Past":
-							StartTime = TimePeriod.Past;
-							break;
-						case "FarPast":
-							StartTime = TimePeriod.FarPast;
-							break;
-						default:
-							StartTime = TimePeriod.Present;
-							break;
-					}
+						"Past" => TimePeriod.Past,
+						"FarPast" => TimePeriod.FarPast,
+						_ => TimePeriod.Present,
+					};
 				}
 
 				if (line.StartsWith("color:", StringComparison.Ordinal))

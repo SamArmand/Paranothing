@@ -12,30 +12,25 @@ namespace Paranothing
 
 		static readonly Dictionary<string, Wardrobe> Wardrobes = new Dictionary<string, Wardrobe>();
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 
 		readonly SoundManager _soundManager = SoundManager.Instance();
 
 		//Collidable
 		readonly Vector2 _startPos;
 		Vector2 _positionPres, _positionPast1, _positionPast2;
-		readonly string _keyName = "";
+		readonly string _keyName = string.Empty;
 
 		internal int X
 		{
 			get
 			{
-				switch (_gameController.TimePeriod)
+				return _gameController.TimePeriod switch
 				{
-					case TimePeriod.FarPast:
-						return (int) _positionPast2.X;
-					case TimePeriod.Past:
-						return (int) _positionPast1.X;
-					case TimePeriod.Present:
-						return (int) _positionPres.X;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
+					TimePeriod.FarPast => (int)_positionPast2.X,
+					TimePeriod.Past => (int)_positionPast1.X,
+					TimePeriod.Present => (int)_positionPres.X,
+					_ => throw new ArgumentOutOfRangeException(),
+				};
 			}
 			set
 			{
@@ -63,17 +58,13 @@ namespace Paranothing
 		{
 			get
 			{
-				switch (_gameController.TimePeriod)
+				return _gameController.TimePeriod switch
 				{
-					case TimePeriod.FarPast:
-						return (int) _positionPast2.Y;
-					case TimePeriod.Past:
-						return (int) _positionPast1.Y;
-					case TimePeriod.Present:
-						return (int) _positionPres.Y;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
+					TimePeriod.FarPast => (int)_positionPast2.Y,
+					TimePeriod.Past => (int)_positionPast1.Y,
+					TimePeriod.Present => (int)_positionPres.Y,
+					_ => throw new ArgumentOutOfRangeException(),
+				};
 			}
 		}
 
@@ -82,10 +73,10 @@ namespace Paranothing
 		internal Rectangle PushBox => new Rectangle(X + 2, Y + 2, 65, 78);
 
 		//Drawable
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wardrobe");
 		string _linkedName;
 		bool _locked;
-		readonly bool _startLocked;
+		readonly bool _startLocked = false;
 		int _frameTime;
 		int _frameLength;
 		int _frame;
@@ -120,10 +111,8 @@ namespace Paranothing
 
 		internal Wardrobe(string saveString)
 		{
-			_sheet = _spriteSheetManager.GetSheet("wardrobe");
 			var x = 0;
 			var y = 0;
-			_startLocked = false;
 			var name = "WR";
 			var link = "WR";
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);

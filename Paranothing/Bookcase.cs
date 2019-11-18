@@ -11,28 +11,27 @@ namespace Paranothing
 		# region Attributes
 
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 
 		readonly SoundManager _soundManager = SoundManager.Instance();
 
 		//Collidable
 		readonly Vector2 _position;
-		readonly string _button1, _button2;
+		readonly string _button1 = string.Empty, _button2 = string.Empty;
 		int _unlockTimer;
 
 		int X => (int) _position.X;
-
 		int Y => (int) _position.Y;
+
 		Rectangle Bounds => new Rectangle(X, Y, 37, 75);
 
 		//Drawable
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _spriteSheet = SpriteSheetManager.GetInstance().GetSheet("bookcase");
 		int _frameTime, _frame;
 		readonly int _frameLength;
 		string _animName;
-		List<int> _animFrames;
+		List<int> _animationFrames;
 
-		public enum BookcasesState
+		public enum BookcaseState
 		{
 			Closed,
 			Closing,
@@ -40,17 +39,17 @@ namespace Paranothing
 			Open
 		}
 
-		internal BookcasesState State;
+		internal BookcaseState State;
 
 		string Animation
 		{
 			get => _animName;
 			set
 			{
-				if (!_sheet.HasAnimation(value) || _animName == value) return;
+				if (!_spriteSheet.HasAnimation(value) || _animName == value) return;
 
 				_animName = value;
-				_animFrames = _sheet.GetAnimation(_animName);
+				_animationFrames = _spriteSheet.GetAnimation(_animName);
 				_frame = 0;
 				_frameTime = 0;
 			}
@@ -62,14 +61,11 @@ namespace Paranothing
 
 		internal Bookcase(string saveString)
 		{
-			_sheet = _spriteSheetManager.GetSheet("bookcase");
 			var x = 0;
 			var y = 0;
-			_button1 = "";
-			_button2 = "";
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var lineNum = 0;
-			var line = "";
+			var line = string.Empty;
 			while (!line.StartsWith("EndBookcase", StringComparison.Ordinal) && lineNum < lines.Length)
 			{
 				line = lines[lineNum++];
@@ -96,7 +92,7 @@ namespace Paranothing
 			}
 
 			Animation = "bookcaseopening";
-			State = BookcasesState.Open;
+			State = BookcaseState.Open;
 			_position = new Vector2(x, y);
 			_frameLength = 100;
 		}
@@ -112,8 +108,8 @@ namespace Paranothing
 
 		//Drawable
 
-		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, new Vector2(X, Y),
-																			_sheet.GetSprite(_animFrames
+		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_spriteSheet.Image, new Vector2(X, Y),
+																			_spriteSheet.GetSprite(_animationFrames
 																								.ElementAt(_frame)),
 																			tint,
 																			0f, new Vector2(), 1f, SpriteEffects.None,
@@ -124,7 +120,7 @@ namespace Paranothing
 		{
 			var elapsed = time.ElapsedGameTime.Milliseconds;
 			_frameTime += elapsed;
-			if (State == BookcasesState.Opening)
+			if (State == BookcaseState.Opening)
 				_unlockTimer += elapsed;
 			if (_unlockTimer >= 450)
 			{
@@ -135,45 +131,45 @@ namespace Paranothing
 			if (_button1 == "" || Button.GetKey(_button1)?.StepOn == true && _button2 == "" ||
 				Button.GetKey(_button2)?.StepOn == true)
 			{
-				if (State == BookcasesState.Closed)
+				if (State == BookcaseState.Closed)
 				{
-					State = BookcasesState.Opening;
+					State = BookcaseState.Opening;
 					if (_unlockTimer == 0) _soundManager.PlaySound("Final Door Part 1");
 				}
 			}
 			else
 			{
 				_unlockTimer = 0;
-				State = State != BookcasesState.Closed ? BookcasesState.Closing : BookcasesState.Closed;
+				State = State != BookcaseState.Closed ? BookcaseState.Closing : BookcaseState.Closed;
 			}
 
 			switch (State)
 			{
-				case BookcasesState.Open:
+				case BookcaseState.Open:
 					Animation = "bookcaseopen";
 					break;
-				case BookcasesState.Opening:
+				case BookcaseState.Opening:
 					if (_frame == 4)
 					{
 						Animation = "bookcaseopen";
-						State = BookcasesState.Open;
+						State = BookcaseState.Open;
 					}
 					else
 						Animation = "bookcaseopening";
 
 					break;
-				case BookcasesState.Closing:
+				case BookcaseState.Closing:
 					_unlockTimer = 0;
 					if (Animation == "bookcaseclosing" && _frame == 4)
 					{
 						Animation = "close";
-						State = BookcasesState.Closed;
+						State = BookcaseState.Closed;
 					}
 					else
 						Animation = "bookcaseclosing";
 
 					break;
-				case BookcasesState.Closed:
+				case BookcaseState.Closed:
 					_unlockTimer = 0;
 					Animation = "bookcaseclosed";
 					break;
@@ -184,14 +180,10 @@ namespace Paranothing
 			if (_frameTime < _frameLength) return;
 
 			_frameTime = 0;
-			_frame = (_frame + 1) % _animFrames.Count;
+			_frame = (_frame + 1) % _animationFrames.Count;
 		}
 
-		public void Interact()
-		{
-			if (State == BookcasesState.Open)
-				Game1.EndGame = true;
-		}
+		public void Interact() => Game1.EndGame |= State == BookcaseState.Open;
 
 		//reset
 		public void Reset()

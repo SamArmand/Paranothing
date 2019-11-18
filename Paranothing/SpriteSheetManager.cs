@@ -4,12 +4,10 @@ namespace Paranothing
 {
 	sealed class SpriteSheetManager
 	{
-		readonly Dictionary<string, SpriteSheet> _spriteSheets;
+		readonly Dictionary<string, SpriteSheet> _spriteSheets = new Dictionary<string, SpriteSheet>();
 		static SpriteSheetManager _instance;
 
 		internal static SpriteSheetManager GetInstance() => _instance ?? (_instance = new SpriteSheetManager());
-
-		SpriteSheetManager() => _spriteSheets = new Dictionary<string, SpriteSheet>();
 
 		internal SpriteSheet GetSheet(string name)
 		{

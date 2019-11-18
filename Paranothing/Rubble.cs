@@ -10,13 +10,11 @@ namespace Paranothing
 
 		readonly GameController _gameController = GameController.GetInstance();
 
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
-
 		//Collideable
 		Vector2 _position;
 
 		//Drawable
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("rubble");
 
 		# endregion
 
@@ -24,7 +22,6 @@ namespace Paranothing
 
 		internal Rubble(string saveString)
 		{
-			_sheet = _spriteSheetManager.GetSheet("rubble");
 			X = 0;
 			Y = 0;
 			var lineNum = 0;

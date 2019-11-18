@@ -11,12 +11,11 @@ namespace Paranothing
 		# region Attributes
 
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 
 		readonly SoundManager _soundManager = SoundManager.Instance();
 
 		//Drawable
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("shadow");
 		int _frame;
 		int _frameLength;
 		int _frameTime;
@@ -53,7 +52,7 @@ namespace Paranothing
 			SeekSound
 		}
 
-		internal ShadowState State;
+		internal ShadowState State = ShadowState.Walk;
 		Direction _direction;
 
 		# endregion
@@ -62,9 +61,7 @@ namespace Paranothing
 
 		internal Shadows(string saveString)
 		{
-			_sheet = _spriteSheetManager.GetSheet("shadow");
 			Animation = "walk";
-			State = ShadowState.Walk;
 			X = 0;
 			Y = 0;
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);

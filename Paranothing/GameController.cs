@@ -9,7 +9,7 @@ namespace Paranothing
 {
 	sealed class GameController
 	{
-		readonly SoundManager _soundMan = SoundManager.Instance();
+		readonly SoundManager _soundManager = SoundManager.Instance();
 		public KeyboardState KeyState;
 		public GamePadState PadState;
 
@@ -24,7 +24,7 @@ namespace Paranothing
 
 		bool _soundTriggered, _showingDialogue;
 		Vector2 _soundPos;
-		string _dialogue = "";
+		string _dialogue = string.Empty;
 		int _dialogueTimer;
 
 		readonly Dictionary<string, Level> _levels;
@@ -147,7 +147,7 @@ namespace Paranothing
 																c is Shadows)
 															&& Collides(button.GetBounds(), c.GetBounds()));
 						if (!button.StepOn && pressed)
-							_soundMan.PlaySound("Button Press");
+							_soundManager.PlaySound("Button Press");
 						button.StepOn = pressed;
 						break;
 					case Stairs stairs:
@@ -161,7 +161,7 @@ namespace Paranothing
 						break;
 					case Bookcase interactor:
 						var bookcase = interactor;
-						if (!colliding || bookcase.State != Bookcase.BookcasesState.Open) continue;
+						if (!colliding || bookcase.State != Bookcase.BookcaseState.Open) continue;
 
 						Player.ActionBubble.SetAction(ActionBubble.BubbleAction.Bookcase, false);
 						Player.ActionBubble.Show();
@@ -176,8 +176,7 @@ namespace Paranothing
 
 						while (Collides(Player.GetBounds(), floor.GetBounds())) --Player.Y;
 						break;
-					case Door door1:
-						var door = door1;
+					case Door door:
 						if (!door.IsLocked || !colliding || Player.State != Boy.BoyState.Walk) continue;
 
 						if (Player.Direction == Direction.Left && Player.X > door.GetBounds().X
@@ -239,7 +238,7 @@ namespace Paranothing
 				chair.State = Chair.ChairsState.Idle;
 				_soundPos = new Vector2(chair.X, chair.Y);
 
-				_soundMan.PlaySound("Chair Drop");
+				_soundManager.PlaySound("Chair Drop");
 			}
 		}
 
@@ -307,14 +306,14 @@ namespace Paranothing
 			switch (stair.Direction)
 			{
 				case Direction.Left:
-					if (Player.Direction == Direction.Left && (int) Player.Y + 58 == stair.GetSmallBounds().Y
+					if (Player.Direction == Direction.Left && (int)Player.Y + 58 == stair.GetSmallBounds().Y
 					 || Player.Direction == Direction.Right &&
-						(int) Player.Y + 58 == stair.Y + stair.GetBounds().Height)
+						(int)Player.Y + 58 == stair.Y + stair.GetBounds().Height)
 						Player.State = Boy.BoyState.Walk;
 					break;
 				case Direction.Right:
-					if (Player.Direction == Direction.Right && (int) Player.Y + 58 == stair.GetSmallBounds().Y
-					 || Player.Direction == Direction.Left && (int) Player.Y + 58 == stair.Y + stair.GetBounds().Height)
+					if (Player.Direction == Direction.Right && (int)Player.Y + 58 == stair.GetSmallBounds().Y
+					 || Player.Direction == Direction.Left && (int)Player.Y + 58 == stair.Y + stair.GetBounds().Height)
 						Player.State = Boy.BoyState.Walk;
 					break;
 				case Direction.Up:
@@ -330,7 +329,7 @@ namespace Paranothing
 		{
 			if (_soundTriggered && TimePeriod == TimePeriod.Present && _soundPos.Y >= shadow.Y &&
 				_soundPos.Y <= shadow.Y + 81)
-				shadow.StalkNoise((int) _soundPos.X, (int) _soundPos.Y);
+				shadow.StalkNoise((int)_soundPos.X, (int)_soundPos.Y);
 
 			if (!colliding || TimePeriod != TimePeriod.Present || Player.State == Boy.BoyState.StairsLeft ||
 				Player.State == Boy.BoyState.StairsRight) return;
@@ -338,26 +337,22 @@ namespace Paranothing
 			Player.Direction = shadow.X > Player.X ? Direction.Right : Direction.Left;
 			Player.State = Boy.BoyState.Die;
 
-			_soundMan.PlaySound("Death");
+			_soundManager.PlaySound("Death");
 			shadow.State = Shadows.ShadowState.Idle;
 		}
 
-		public void DrawObjs(SpriteBatch renderer)
+		public void DrawObjs(SpriteBatch spriteBatch)
 		{
-			if (_dialogueTimer >= 3000)
-				_showingDialogue = false;
+			_showingDialogue &= _dialogueTimer < 3000;
 
 			if (_showingDialogue)
 			{
 				var (x, y) = Game1.GameFont.MeasureString(_dialogue);
-				renderer.DrawString(Game1.GameFont, _dialogue, new Vector2
-															   {
-																   X =
-																	   Camera.X + Camera.Width / 2f / Camera.Scale -
-																	   x / 2,
-																   Y = Camera.Y + Camera.Height / Camera.Scale -
-																	   y - 10
-															   }, Color.White);
+				spriteBatch.DrawString(Game1.GameFont, _dialogue, new Vector2
+				{
+					X = Camera.X + Camera.Width / 2f / Camera.Scale - x / 2,
+					Y = Camera.Y + Camera.Height / Camera.Scale - y - 10
+				}, Color.White);
 			}
 
 			var tint = Color.White;
@@ -375,9 +370,9 @@ namespace Paranothing
 					throw new ArgumentOutOfRangeException();
 			}
 
-			foreach (var obj in _drawableObjs) obj.Draw(renderer, tint);
+			foreach (var obj in _drawableObjs) obj.Draw(spriteBatch, tint);
 
-			Player.Draw(renderer, tint);
+			Player.Draw(spriteBatch, tint);
 		}
 
 		static bool Collides(Rectangle box1, Rectangle box2)

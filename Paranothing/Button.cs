@@ -11,14 +11,13 @@ namespace Paranothing
 
         static readonly Dictionary<string, Button> Buttons = new Dictionary<string, Button>();
 
-        readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
         //Collideable
         Vector2 _position;
         Rectangle Bounds => new Rectangle(X, Y, 16, 5);
 
         //Drawable
-        readonly SpriteSheet _sheet;
-        internal bool StepOn;
+        readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("button");
+        internal bool StepOn = false;
 
         # endregion
 
@@ -26,8 +25,6 @@ namespace Paranothing
 
         internal Button(string saveString)
         {
-            _sheet = _spriteSheetManager.GetSheet("button");
-            StepOn = false;
             X = 0;
             Y = 0;
             var name = "BT";

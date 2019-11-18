@@ -7,8 +7,7 @@ namespace Paranothing
 	sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable, ISaveable
 	{
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("stair");
 		Vector2 _position;
 
 		internal int X
@@ -23,18 +22,14 @@ namespace Paranothing
 			private set => _position.Y = value;
 		}
 
-		readonly bool _startIntact;
-		bool _intact;
-		public readonly Direction Direction;
+		readonly bool _startIntact = true;
+		bool _intact = true;
+		public readonly Direction Direction = Direction.Left;
 
 		internal Stairs(string saveString)
 		{
-			_sheet = _sheetManager.GetSheet("stair");
 			X = 0;
 			Y = 0;
-			Direction = Direction.Left;
-			_intact = true;
-			_startIntact = true;
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var lineNum = 0;
 			var line = "";
@@ -60,10 +55,7 @@ namespace Paranothing
 					}
 
 				if (line.StartsWith("direction:", StringComparison.Ordinal))
-				{
-					var dir = line.Substring(10).Trim();
-					Direction = dir == "Right" ? Direction.Right : Direction.Left;
-				}
+					Direction = line.Substring(10).Trim() == "Right" ? Direction.Right : Direction.Left;
 
 				if (!line.StartsWith("intact:", StringComparison.Ordinal)) continue;
 

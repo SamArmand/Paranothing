@@ -11,7 +11,6 @@ namespace Paranothing
         # region Attributes
 
         readonly GameController _gameController = GameController.GetInstance();
-        readonly SpriteSheetManager _sheetManager = SpriteSheetManager.GetInstance();
 
         readonly SoundManager _soundManager = SoundManager.Instance();
         //Collidable
@@ -19,8 +18,8 @@ namespace Paranothing
         Rectangle Bounds => new Rectangle(X + 25, Y, 8, 75);
 
         //Drawable
-        readonly SpriteSheet _sheet;
-        readonly bool _startLocked;
+        readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("door");
+        readonly bool _startLocked = false;
         int _frameTime, _frameLength, _frame;
         string _animName;
         List<int> _animFrames;
@@ -36,10 +35,8 @@ namespace Paranothing
 
         internal Door(string saveString)
         {
-            _sheet = _sheetManager.GetSheet("door");
             X = 0;
             Y = 0;
-            _startLocked = false;
             var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var lineNum = 0;
             var line = "";

@@ -7,7 +7,11 @@ namespace Paranothing
 	sealed class Wall : IDrawable, ICollideable, IUpdatable, ISaveable
 	{
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wall");
+		readonly int _width = 0,
+					 _height = 0;
+		readonly bool _startIntact = true;
+
 		Vector2 _position;
 
 		int X
@@ -22,24 +26,16 @@ namespace Paranothing
 			set => _position.Y = value;
 		}
 
-		readonly int _width,
-					 _height;
-
 		Rectangle Box => new Rectangle(X, Y, _width, _height);
-		readonly SpriteSheet _sheet;
+		
 		bool _intact;
-		readonly bool _startIntact;
 
 		internal Wall(string saveString)
 		{
-			_sheet = _spriteSheetManager.GetSheet("wall");
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var lineNum = 0;
 			X = 0;
 			Y = 0;
-			_width = 0;
-			_height = 0;
-			_startIntact = true;
 			var line = "";
 			while (!line.StartsWith("EndWall", StringComparison.Ordinal) && lineNum < lines.Length)
 			{

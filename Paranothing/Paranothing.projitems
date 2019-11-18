@@ -6,7 +6,7 @@
     <SharedGUID>4accda27-3494-4b3e-bccf-0c0a0845c794</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>projectName</Import_RootNamespace>
+    <Import_RootNamespace>Paranothing</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Game1.cs" />

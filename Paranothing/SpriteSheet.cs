@@ -11,16 +11,11 @@ namespace Paranothing
 	/// </summary>
 	sealed class SpriteSheet
 	{
-		readonly Dictionary<string, List<int>> _animations;
-		readonly List<Rectangle> _sprites;
+		readonly Dictionary<string, List<int>> _animations = new Dictionary<string, List<int>>();
+		readonly List<Rectangle> _sprites = new List<Rectangle>();
 		internal readonly Texture2D Image;
 
-		internal SpriteSheet(Texture2D image)
-		{
-			Image = image;
-			_animations = new Dictionary<string, List<int>>();
-			_sprites = new List<Rectangle>();
-		}
+		internal SpriteSheet(Texture2D image) => Image = image;
 
 		/// <summary>
 		/// Define a sprite within the spritesheet.
@@ -49,8 +44,8 @@ namespace Paranothing
 			var width = (int) Math.Floor((float) Image.Width / columns);
 			var height = (int) Math.Floor((float) Image.Height / rows);
 			var count = 0;
-			for (var row = 0; row != rows; row++)
-				for (var col = 0; col != columns; col++)
+			for (var row = 0; row != rows; ++row)
+				for (var col = 0; col != columns; ++col)
 					if (count++ < limit || limit <= 0)
 						_sprites.Add(new Rectangle((width + padX) * col, (height + padY) * row, width, height));
 					else
@@ -61,24 +56,15 @@ namespace Paranothing
 		/// Define an animation within the sprite sheet.
 		/// </summary>
 		/// <param name="name">The name of the animation (must be unique to the sprite sheet).</param>
-		/// <param name="spriteIndices">A List of the indices of the sprites in the animation.</param>
+		/// <param name="spriteIndices">An array of the indices of the sprites in the animation.</param>
 		/// <returns>True if adding was successful, false otherwise.</returns>
-		void AddAnimation(string name, List<int> spriteIndices)
+		internal void AddAnimation(string name, IEnumerable<int> spriteIndices)
 		{
 			name = name.ToLower();
 			if (_animations.ContainsKey(name)) return;
 
-			_animations.Add(name, spriteIndices);
+			_animations.Add(name, spriteIndices.ToList());
 		}
-
-		/// <summary>
-		/// Define an animation within the sprite sheet.
-		/// </summary>
-		/// <param name="name">The name of the animation (must be unique to the sprite sheet).</param>
-		/// <param name="spriteIndices">An array of the indices of the sprites in the animation.</param>
-		/// <returns>True if adding was successful, false otherwise.</returns>
-		internal void AddAnimation(string name, IEnumerable<int> spriteIndices) =>
-			AddAnimation(name.ToLower(), spriteIndices.ToList());
 
 		/// <summary>
 		/// Gets a list of sprite indices in an animation.

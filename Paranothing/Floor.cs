@@ -7,7 +7,6 @@ namespace Paranothing
 	sealed class Floor : IDrawable, ICollideable, ISaveable
 	{
 		readonly GameController _control = GameController.GetInstance();
-		readonly SpriteSheetManager _sheetMan = SpriteSheetManager.GetInstance();
 		Vector2 _position;
 
 		int X
@@ -22,19 +21,16 @@ namespace Paranothing
 			set => _position.Y = value;
 		}
 
-		readonly int _width, _height;
+		readonly int _width = 0, _height = 0;
 
 		Rectangle Box => new Rectangle(X, Y, _width, _height);
-		readonly SpriteSheet _sheet;
+		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("floor");
 
 		internal Floor(string saveString)
 		{
-			_sheet = _sheetMan.GetSheet("floor");
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			X = 0;
 			Y = 0;
-			_width = 0;
-			_height = 0;
 			var lineNum = 0;
 			var line = "";
 			while (!line.StartsWith("EndFloor", StringComparison.Ordinal) && lineNum < lines.Length)

@@ -7,7 +7,7 @@ namespace Paranothing
     {
         readonly GameController _gameController = GameController.GetInstance();
         bool Played { get; set; }
-        readonly string _text;
+        readonly string _text = "...";
         Vector2 _position;
 
         int X
@@ -28,7 +28,6 @@ namespace Paranothing
         {
             X = 0;
             Y = 0;
-            _text = "...";
             var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var lineNum = 0;
             var line = "";
