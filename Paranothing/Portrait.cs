@@ -24,7 +24,7 @@ namespace Paranothing
 		}
 
 		readonly SpriteSheet _sheet;
-		internal bool WasMoved { get; } = false;
+		internal bool WasMoved { get; }
 		internal Vector2 MovedPos;
 		internal TimePeriod InTime { get; }
 		internal TimePeriod SendTime { get; }
