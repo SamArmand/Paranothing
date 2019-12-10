@@ -118,6 +118,7 @@ namespace Paranothing
 			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var lineNum = 0;
 			var line = "";
+
 			while (!line.StartsWith("EndWardrobe", StringComparison.Ordinal) && lineNum < lines.Length)
 			{
 				line = lines[lineNum++];
@@ -154,7 +155,8 @@ namespace Paranothing
 			}
 
 			_locked = _startLocked;
-			if (_startLocked)
+
+			if (_locked)
 			{
 				Animation = "wardrobeclosed";
 				State = WardrobeState.Closed;
@@ -238,7 +240,6 @@ namespace Paranothing
 					}
 					else
 						Animation = "wardrobeopening";
-
 					break;
 				case WardrobeState.Closed:
 					Animation = "wardrobeclosed";

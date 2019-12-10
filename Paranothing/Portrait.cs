@@ -7,7 +7,6 @@ namespace Paranothing
 	sealed class Portrait : IDrawable, ICollideable, IInteractable, ISaveable
 	{
 		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheetManager _spriteSheetManager = SpriteSheetManager.GetInstance();
 		readonly SoundManager _soundManager = SoundManager.Instance();
 		Vector2 _position;
 
@@ -31,15 +30,14 @@ namespace Paranothing
 
 		internal Portrait(string saveString, string str)
 		{
-			_sheet = _spriteSheetManager.GetSheet("portrait");
 			SendTime = TimePeriod.Past;
 			ParseString(saveString, str);
+			_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
 		}
 
 		//present past constructor
 		internal Portrait(string saveString, TimePeriod period)
 		{
-			_sheet = _spriteSheetManager.GetSheet("portrait");
 			switch (period)
 			{
 				case TimePeriod.Present:
@@ -47,17 +45,19 @@ namespace Paranothing
 					WasMoved = true;
 					InTime = TimePeriod.Present;
 					SendTime = TimePeriod.Past;
+					_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
 					break;
 				case TimePeriod.Past:
 					ParseString(saveString, "EndPastPortrait");
 					WasMoved = true;
 					InTime = TimePeriod.Past;
 					SendTime = TimePeriod.Past;
+					_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
 					break;
 				case TimePeriod.FarPast:
 					ParseString(saveString, "EndOldPortrait");
 					SendTime = TimePeriod.FarPast;
-					_sheet = _spriteSheetManager.GetSheet("oldportrait");
+					_sheet = SpriteSheetManager.GetInstance().GetSheet("oldportrait");
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(period), period, null);

@@ -6,6 +6,16 @@ namespace Paranothing
 {
 	sealed class ActionBubble : IDrawable
 	{
+		readonly int _negateIndex;
+
+		readonly SpriteSheet _spriteSheet = SpriteSheetManager.GetInstance().GetSheet("action");
+
+		bool _isNegated = false;
+		string _animationName;
+		int _animationIndex;
+
+		BubbleAction _bubbleAction = BubbleAction.None;
+
 		internal enum BubbleAction
 		{
 			None,
@@ -18,14 +28,8 @@ namespace Paranothing
 			Bookcase
 		}
 
-		BubbleAction _bubbleAction = BubbleAction.None;
-		bool _isNegated = false;
-		readonly SpriteSheet _spriteSheet = SpriteSheetManager.GetInstance().GetSheet("action");
 		internal Boy Boy { private get; set; }
 		internal Chair Chair { set; private get; }
-
-		string _animationName;
-		int _animationIndex;
 
 		string Animation
 		{
@@ -38,11 +42,9 @@ namespace Paranothing
 			}
 		}
 
-		readonly int _negateIndex;
-
 		internal ActionBubble()
 		{
-			if (_spriteSheet.HasAnimation("negate")) _negateIndex = _spriteSheet.GetAnimation("negate").First();
+			if (_spriteSheet.HasAnimation("negate")) _negateIndex = _spriteSheet.GetAnimation("negate").FirstOrDefault();
 		}
 
 		internal bool IsVisible { get; private set; }

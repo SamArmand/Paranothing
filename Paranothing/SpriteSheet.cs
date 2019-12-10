@@ -61,9 +61,7 @@ namespace Paranothing
 		internal void AddAnimation(string name, IEnumerable<int> spriteIndices)
 		{
 			name = name.ToLower();
-			if (_animations.ContainsKey(name)) return;
-
-			_animations.Add(name, spriteIndices.ToList());
+			if (!_animations.ContainsKey(name)) _animations.Add(name, spriteIndices.ToList());
 		}
 
 		/// <summary>
@@ -74,10 +72,14 @@ namespace Paranothing
 		internal List<int> GetAnimation(string name)
 		{
 			name = name.ToLower();
-			var animation = new List<int>();
+
 			if (_animations.ContainsKey(name))
-				_animations.TryGetValue(name, out animation);
-			return animation;
+			{
+				_animations.TryGetValue(name, out var animation);
+				return animation;
+			}
+
+			return new List<int>();
 		}
 
 		/// <summary>

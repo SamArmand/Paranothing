@@ -14,9 +14,11 @@ namespace Paranothing
 		internal int PlayerX,
 					 PlayerY; // Player's starting position
 
-		internal Color WallpaperColor;
 		internal string Name { get; private set; }
 		internal string NextLevel { get; private set; }
+
+		internal Color WallpaperColor;
+
 		internal TimePeriod StartTime;
 		List<ISaveable> _savedObjs = new List<ISaveable>();
 
