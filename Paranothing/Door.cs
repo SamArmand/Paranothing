@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-    sealed class Door : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    sealed class Door : ICollideable, IUpdatable, IDrawable, ISaveable
     {
         # region Attributes
 
@@ -174,11 +174,6 @@ namespace Paranothing
 
             _frameTime = 0;
             _frame = (_frame + 1) % _animFrames.Count;
-        }
-
-        //Interactive
-        public void Interact()
-        {
         }
 
         # endregion

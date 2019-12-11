@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-	sealed class DoorKey : IDrawable, ICollideable, ISaveable, IInteractable
+	sealed class DoorKey : IDrawable, ICollideable, ISaveable
 	{
 		# region Attributes
 
@@ -119,11 +119,6 @@ namespace Paranothing
 						  _gameController.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint,
 						  0f,
 						  new Vector2(), SpriteEffects.None, DrawLayer.Key);
-		}
-
-		//Interactive
-		public void Interact()
-		{
 		}
 
 		internal static DoorKey GetKey(string name)

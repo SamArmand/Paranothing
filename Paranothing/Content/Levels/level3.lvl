@@ -11,13 +11,13 @@ color:192,255,192
 StartDialogue
 x:750
 y:130
-text: Let me clear this rubble for you.
+text: Man: Let my memories clear this rubble for you.
 EndDialogue
 
 StartDialogue
 x:20
 y:23
-text: Oh, I forgot I was moved. Sorry.
+text: Man: Oh! I forgot I was moved recently. Sorry.
 EndDialogue
 
 StartWall

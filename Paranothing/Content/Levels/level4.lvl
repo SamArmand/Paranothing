@@ -11,43 +11,43 @@ color:255,232,255
 StartDialogue
 x:17
 y:114
-text: It's time to move on. There's a safe room in the study.
+text: Man: It's time to move on. There's a safe room in the study.
 EndDialogue
 
 StartDialogue
 x:75
 y:114
-text: Hold down the blue buttons to open it.
+text: Man: Hold down the blue buttons to open it.
 EndDialogue
 
 StartDialogue
 x:150
 y:114
-text: I'm sorry I'm in no position to help you.
+text: Man: I'm sorry I'm in no position to help you any further.
 EndDialogue
 
 StartDialogue
 x:25
 y:20
-text: Not that I ever was... I'm sorry Bruce.
+text: Man: Not that I ever really was. I'm sorry, Bruce.
 EndDialogue
 
 StartDialogue
 x:525
 y:114
-text: He was absent when the house was built. I can show you.
+text: Woman: He was gone when the house was built. I can show you the way.
 EndDialogue
 
 StartDialogue
 x:250
 y:77
-text: Bruce ... Bruce we're so sorry.
+text: Man: Well, at least I remember where the keys are. *Tsk* *Tsk*.
 EndDialogue
 
 StartDialogue
 x:750
 y:114
-text: Almost there Bruce. You'll be safe in a minute.
+text: Woman: You're almost there Bruce. You'll be safe in a minute.
 EndDialogue
 
 StartWall

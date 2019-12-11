@@ -9,7 +9,7 @@ namespace Paranothing
         internal readonly int Width, Height;
         internal readonly float Scale;
 
-		public Camera(int x, int y, int width, int height, float scale)
+		internal Camera(int x, int y, int width, int height, float scale)
         {
             X = x;
             Y = y;

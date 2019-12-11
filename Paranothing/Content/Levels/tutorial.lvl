@@ -11,13 +11,13 @@ color:192,255,255
 StartDialogue
 x:5
 y:114
-text: Well, well. There are strangers in my house.
+text: Man: Well, well... There are strangers in my house.
 EndDialogue
 
 StartDialogue
 x:80
 y:114
-text: You won't be safe here, boy so get moving.
+text: Man: You won't be safe here, boy. So get moving!
 EndDialogue
 
 StartWall
@@ -38,13 +38,13 @@ EndWall
 StartDialogue
 x:400
 y:20
-text: You'll have to distract him with something.
+text: Man: You'll have to distract the Shadow with something.
 EndDialogue
 
 StartDialogue
 x:175
 y:20
-text: Be careful. He'll hear the wardrobe opening.
+text: Man: Be careful! It'll hear the wardrobe opening.
 EndDialogue
 
 StartWall

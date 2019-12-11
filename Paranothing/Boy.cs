@@ -44,13 +44,13 @@ namespace Paranothing
 			set => _position.X = value;
 		}
 
-		public float Y
+		internal float Y
 		{
 			get => _position.Y;
 			set => _position.Y = value;
 		}
 
-		public enum BoyState
+		internal enum BoyState
 		{
 			Idle,
 			Walk,
@@ -69,10 +69,10 @@ namespace Paranothing
 		internal ActionBubble ActionBubble { get; }
 		Vector2 _teleportTo;
 		TimePeriod _timeTravelTo;
-		public Chair NearestChair { get; set; }
-		public IInteractable Interactor;
+		internal Chair NearestChair { get; set; }
+		internal IInteractable Interactor;
 
-		public Boy(float x, float y, ActionBubble actionBubble)
+		internal Boy(float x, float y, ActionBubble actionBubble)
 		{
 			_position = new Vector2(x, y);
 			Animation = "stand";
@@ -81,7 +81,7 @@ namespace Paranothing
 			ActionBubble.Show();
 		}
 
-		public void Reset()
+		internal void Reset()
 		{
 			_frame = 0;
 			_frameTime = 0;
@@ -232,7 +232,7 @@ namespace Paranothing
 
 					if (Animation == "control" || Animation == "controlstart") Animation = "controlend";
 
-					if ((Animation == "endpush" || Animation == "controlend") && _frame == 2 || Animation == "walk")
+					if (Animation == "endpush" || (Animation == "controlend" && _frame == 2) || Animation == "walk")
 					{
 						Animation = "stand";
 

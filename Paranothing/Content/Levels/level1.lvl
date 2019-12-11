@@ -12,13 +12,13 @@ startTime:Present
 StartDialogue
 x:20
 y:130
-text: The past doesn't just restore staircases or clear rubble.
+text: Man: Wow! Teleporting wardrobes and spooky flying chairs!
 EndDialogue
 
 StartDialogue
 x:150
 y:130
-text: Any changes made in the past will affect the present.
+text: Man: Also, any changes you make in my past will affect your present!
 EndDialogue
 
 StartWall
