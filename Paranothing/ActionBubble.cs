@@ -10,7 +10,7 @@ namespace Paranothing
 
 		readonly SpriteSheet _spriteSheet = SpriteSheetManager.GetInstance().GetSheet("action");
 
-		bool _isNegated = false;
+		bool _isNegated;
 		string _animationName;
 		int _animationIndex;
 

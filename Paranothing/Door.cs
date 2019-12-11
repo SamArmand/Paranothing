@@ -19,7 +19,7 @@ namespace Paranothing
 
         //Drawable
         readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("door");
-        readonly bool _startLocked = false;
+        readonly bool _startLocked;
         int _frameTime, _frameLength, _frame;
         string _animName;
         List<int> _animFrames;

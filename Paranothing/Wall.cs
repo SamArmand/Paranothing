@@ -8,8 +8,8 @@ namespace Paranothing
 	{
 		readonly GameController _gameController = GameController.GetInstance();
 		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wall");
-		readonly int _width = 0,
-					 _height = 0;
+		readonly int _width,
+					 _height;
 		readonly bool _startIntact = true;
 
 		Vector2 _position;
@@ -27,7 +27,7 @@ namespace Paranothing
 		}
 
 		Rectangle Box => new Rectangle(X, Y, _width, _height);
-		
+
 		bool _intact;
 
 		internal Wall(string saveString)

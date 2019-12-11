@@ -18,9 +18,9 @@ namespace Paranothing
 
 		//Drawable
 		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("key");
-		internal bool RestrictTime { get; } = false;
+		internal bool RestrictTime { get; }
 		internal TimePeriod InTime { get; } = TimePeriod.Present;
-		internal bool PickedUp { get; set; } = false;
+		internal bool PickedUp { get; set; }
 
 		internal string Name { get; } = "Key";
 

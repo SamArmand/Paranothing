@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Paranothing
 {
-	sealed class Shadows : ICollideable, IUpdatable, IDrawable, ISaveable
+	sealed class Shadow : ICollideable, IUpdatable, IDrawable, ISaveable
 	{
 		# region Attributes
 
@@ -59,7 +59,7 @@ namespace Paranothing
 
 		# region Constructor
 
-		internal Shadows(string saveString)
+		internal Shadow(string saveString)
 		{
 			Animation = "walk";
 			X = 0;

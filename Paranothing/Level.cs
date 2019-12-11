@@ -36,6 +36,7 @@ namespace Paranothing
 			}
 			catch (Exception)
 			{
+				// ignored
 			}
 		}
 
@@ -70,14 +71,12 @@ namespace Paranothing
 				if (line.StartsWith("height:", StringComparison.Ordinal))
 					Height = int.Parse(line.Substring(7));
 				if (line.StartsWith("startTime:", StringComparison.Ordinal))
-				{
 					StartTime = line.Substring(10).Trim() switch
 					{
 						"Past" => TimePeriod.Past,
 						"FarPast" => TimePeriod.FarPast,
 						_ => TimePeriod.Present,
 					};
-				}
 
 				if (line.StartsWith("color:", StringComparison.Ordinal))
 					WallpaperColor = ParseColor(line.Substring(6));
@@ -104,7 +103,7 @@ namespace Paranothing
 						objData.Append("\n" + line);
 					}
 
-					AddObj(new Shadows(objData.ToString()));
+					AddObj(new Shadow(objData.ToString()));
 				}
 
 				// Stairs

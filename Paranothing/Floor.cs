@@ -21,7 +21,7 @@ namespace Paranothing
 			set => _position.Y = value;
 		}
 
-		readonly int _width = 0, _height = 0;
+		readonly int _width, _height;
 
 		Rectangle Box => new Rectangle(X, Y, _width, _height);
 		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("floor");

@@ -76,7 +76,7 @@ namespace Paranothing
 		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wardrobe");
 		string _linkedName;
 		bool _locked;
-		readonly bool _startLocked = false;
+		readonly bool _startLocked;
 		int _frameTime;
 		int _frameLength;
 		int _frame;

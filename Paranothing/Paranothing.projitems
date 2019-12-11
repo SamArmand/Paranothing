@@ -31,13 +31,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)Level.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Portrait.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rubble.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Shadows.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shadow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SoundManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteSheet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteSheetManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stairs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wardrobe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Direction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TimePeriod.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DrawLayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="$(MSBuildThisFileDirectory)Content\Content.mgcb" />

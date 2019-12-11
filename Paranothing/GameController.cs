@@ -31,7 +31,7 @@ namespace Paranothing
 
 		static GameController _instance;
 
-		public static GameController GetInstance() => _instance ?? (_instance = new GameController());
+		public static GameController GetInstance() => _instance ??= new GameController();
 
 		GameController()
 		{
@@ -126,7 +126,7 @@ namespace Paranothing
 				var colliding = Collides(obj.GetBounds(), Player.GetBounds());
 				switch (obj)
 				{
-					case Shadows shadow:
+					case Shadow shadow:
 						UpdateShadow(shadow, colliding);
 						break;
 					case Dialogue dialogue:
@@ -139,12 +139,11 @@ namespace Paranothing
 						if (!key.RestrictTime || TimePeriod == key.InTime)
 							key.PickedUp = true;
 						break;
-					case Button button1:
-						var button = button1;
+					case Button button:
 						var pressed = _collideableObjs.Any(
 														   c =>
 															   (c is Boy || TimePeriod == TimePeriod.Present &&
-																c is Shadows)
+																c is Shadow)
 															&& Collides(button.GetBounds(), c.GetBounds()));
 						if (!button.StepOn && pressed)
 							_soundManager.PlaySound("Button Press");
@@ -325,7 +324,7 @@ namespace Paranothing
 			}
 		}
 
-		void UpdateShadow(Shadows shadow, bool colliding)
+		void UpdateShadow(Shadow shadow, bool colliding)
 		{
 			if (_soundTriggered && TimePeriod == TimePeriod.Present && _soundPos.Y >= shadow.Y &&
 				_soundPos.Y <= shadow.Y + 81)
@@ -338,7 +337,7 @@ namespace Paranothing
 			Player.State = Boy.BoyState.Die;
 
 			_soundManager.PlaySound("Death");
-			shadow.State = Shadows.ShadowState.Idle;
+			shadow.State = Shadow.ShadowState.Idle;
 		}
 
 		public void DrawObjs(SpriteBatch spriteBatch)

@@ -12,9 +12,9 @@ namespace Paranothing
 		readonly GameController _gameController = GameController.GetInstance();
 		readonly SoundManager _soundManager = SoundManager.Instance();
 		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("boy");
-		int _frame = 0;
+		int _frame;
 		int _frameLength = 60;
-		int _frameTime = 0;
+		int _frameTime;
 		string _animName;
 		List<int> _animFrames;
 
@@ -67,7 +67,7 @@ namespace Paranothing
 		internal BoyState State = BoyState.Idle;
 		internal Direction Direction { get; set; } = Direction.Right;
 		internal ActionBubble ActionBubble { get; }
-		Vector2 _teleportTo = new Vector2();
+		Vector2 _teleportTo;
 		TimePeriod _timeTravelTo;
 		public Chair NearestChair { get; set; }
 		public IInteractable Interactor;

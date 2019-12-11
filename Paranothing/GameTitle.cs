@@ -10,8 +10,8 @@ namespace Paranothing
 	{
 		# region Attribute
 
-		Rectangle _topTextRect = new Rectangle(),
-				  _bottomTextRect = new Rectangle();
+		Rectangle _topTextRect,
+				  _bottomTextRect;
 
 		int _menuIndex;
 		internal int MenuSize = 5;

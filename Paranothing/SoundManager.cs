@@ -12,7 +12,7 @@ namespace Paranothing
 		Dictionary<string, SoundEffectInstance> SoundEffectInstances { get; } =
 			new Dictionary<string, SoundEffectInstance>();
 
-		internal static SoundManager Instance() => _instance ?? (_instance = new SoundManager());
+		internal static SoundManager Instance() => _instance ??= new SoundManager();
 
 		internal void PlaySound(string soundName, bool isLooped = false, bool force = false)
 		{
