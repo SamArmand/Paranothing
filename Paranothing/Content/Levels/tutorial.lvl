@@ -151,14 +151,14 @@ y:1
 patrolDist:0
 EndShadow
 
-StartChairs
+StartChair
 x:250
 y:30
-EndChairs
+EndChair
 
-StartStair
+StartStairs
 x:446
 y:60
 intact:false
 direction:Right
-EndStair
+EndStairs

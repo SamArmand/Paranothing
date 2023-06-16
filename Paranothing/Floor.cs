@@ -2,92 +2,41 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Floor : IDrawable, ICollideable
 {
-	sealed class Floor : IDrawable, ICollideable, ISaveable
-	{
-		readonly GameController _control = GameController.GetInstance();
-		Vector2 _position;
+    readonly GameController _gameController = GameController.Instance;
+    readonly int _width, _height;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("floor");
+    readonly Vector2 _position = Vector2.Zero;
 
-		int X
-		{
-			get => (int) _position.X;
-			set => _position.X = value;
-		}
+    internal Floor(string saveString)
+    {
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith("EndFloor", StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.X);
 
-		int Y
-		{
-			get => (int) _position.Y;
-			set => _position.Y = value;
-		}
+            else if (line.StartsWith("y:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.Y);
 
-		readonly int _width, _height;
+            else if (line.StartsWith("width:", StringComparison.Ordinal)) _ = int.TryParse(line[6..], out _width);
 
-		Rectangle Box => new Rectangle(X, Y, _width, _height);
-		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("floor");
+            else if (line.StartsWith("height:", StringComparison.Ordinal)) _ = int.TryParse(line[7..], out _height);
+        }
+    }
 
-		internal Floor(string saveString)
-		{
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			X = 0;
-			Y = 0;
-			var lineNum = 0;
-			var line = "";
-			while (!line.StartsWith("EndFloor", StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						X = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public Rectangle Bounds => new((int)_position.X, (int)_position.Y, _width, _height);
 
-				if (line.StartsWith("y:", StringComparison.Ordinal))
-					try
-					{
-						Y = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public bool IsSolid => true;
 
-				if (line.StartsWith("width:", StringComparison.Ordinal))
-					try
-					{
-						_width = int.Parse(line.Substring(6));
-					}
-					catch (FormatException)
-					{
-					}
-
-				if (!line.StartsWith("height:", StringComparison.Ordinal)) continue;
-
-				try
-				{
-					_height = int.Parse(line.Substring(7));
-				}
-				catch (FormatException)
-				{
-				}
-			}
-		}
-
-		public void Reset()
-		{
-		}
-
-		public Rectangle GetBounds() => Box;
-
-		public bool IsSolid() => true;
-
-		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, Box,
-																			_control.TimePeriod == TimePeriod.Present
-																				? _sheet.GetSprite(1)
-																				: _sheet.GetSprite(0), tint, 0f,
-																			new Vector2(), SpriteEffects.None,
-																			DrawLayer.Floor);
-	}
+    public void Draw(SpriteBatch spriteBatch, Color tint) => spriteBatch.Draw(_spriteSheet.Image, Bounds,
+        _gameController.TimePeriod == TimePeriod.Present
+            ? _spriteSheet.GetSprite(1)
+            : _spriteSheet.GetSprite(0), tint, 0f,
+        new(), SpriteEffects.None,
+        DrawLayer.Floor);
 }

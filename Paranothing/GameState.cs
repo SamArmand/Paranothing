@@ -1,8 +1,7 @@
-﻿namespace Paranothing
+﻿namespace Paranothing;
+
+enum GameState
 {
-	enum GameState
-	{
-		MainMenu,
-		Game
-	}
+    MainMenu,
+    Game
 }

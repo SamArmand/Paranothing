@@ -1,46 +1,52 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Camera : IUpdatable
 {
-    sealed class Camera : IUpdatable
+    readonly GameController _gameController = GameController.Instance;
+    Vector2 _position;
+
+    internal float Scale { get; init; }
+    internal int Width { get; init; }
+    internal int Height { get; init; }
+
+    internal Vector2 Position
     {
-        readonly GameController _gameController = GameController.GetInstance();
-        internal int X, Y;
-        internal readonly int Width, Height;
-        internal readonly float Scale;
+        get => _position;
+        set => _position = value;
+    }
 
-		internal Camera(int x, int y, int width, int height, float scale)
-        {
-            X = x;
-            Y = y;
-            Width = width;
-            Height = height;
-            Scale = scale;
-        }
+    public void Update(GameTime time)
+    {
+        var brucePosition = _gameController.Bruce.Position;
 
-        public void Update(GameTime time)
-        {
-            var player = _gameController.Player;
+        var heightToScaleRatio = Height / Scale;
+        var widthToScaleRatio = Width / Scale;
 
-            X = (int)player.X - (int)(Width/ Scale / 2);
-            Y = (int)player.Y - (int)(Height/ Scale/ 2);
+        _position.X = brucePosition.X - widthToScaleRatio / 2;
+        _position.Y = brucePosition.Y - heightToScaleRatio / 2;
 
-            var level = _gameController.Level;
-            var levelWidth = level.Width;
+        var level = _gameController.Level;
 
-            if (X > levelWidth - Width/Scale)
-                X = levelWidth - (int)(Width/Scale);
+        var levelWidthLimit = level.Width - Width / Scale;
 
-            var levelHeight = level.Height;
+        if (_position.X > levelWidthLimit)
+            _position.X = levelWidthLimit;
 
-            if (Y > levelHeight - Height/Scale)
-                Y = levelHeight - (int)(Height/Scale);
-            if (X < 0)
-                X = 0;
-            if (Y < 0 || levelHeight < Height/Scale)
-                Y = 0;
-            if (Height/Scale > levelHeight)
-                Y = -(int)((Height/Scale - levelHeight) / 2);
-        }
+        var levelHeight = level.Height;
+        var levelHeightLimit = levelHeight - heightToScaleRatio;
+
+        if (_position.Y > levelHeightLimit)
+            _position.Y = levelHeightLimit;
+
+        if (_position.X < 0)
+            _position.X = 0;
+
+        if (_position.Y < 0 || levelHeight < heightToScaleRatio)
+            _position.Y = 0;
+
+        if (heightToScaleRatio > levelHeight)
+            _position.Y = -((heightToScaleRatio - levelHeight) / 2);
     }
 }

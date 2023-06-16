@@ -4,306 +4,242 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Wardrobe : ICollideable, IUpdatable, IDrawable, IInteractable, IResetable
 {
-	sealed class Wardrobe : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
-	{
-		# region Attributes
+    static readonly Dictionary<string, Wardrobe> Wardrobes = new();
 
-		static readonly Dictionary<string, Wardrobe> Wardrobes = new Dictionary<string, Wardrobe>();
-		readonly GameController _gameController = GameController.GetInstance();
+    internal WardrobeState State;
 
-		readonly SoundManager _soundManager = SoundManager.Instance();
+    readonly bool _startLocked;
+    readonly GameController _gameController = GameController.Instance;
+    readonly SoundManager _soundManager = SoundManager.Instance;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("wardrobe");
+    readonly string _keyName = string.Empty;
+    readonly string _linkedName;
+    readonly Vector2 _startingPosition;
 
-		//Collidable
-		readonly Vector2 _startPos;
-		Vector2 _positionPres, _positionPast1, _positionPast2;
-		readonly string _keyName = string.Empty;
+    int _frame;
+    int _frameLength;
+    int _frameTime;
 
-		internal int X
-		{
-			get
-			{
-				return _gameController.TimePeriod switch
-				{
-					TimePeriod.FarPast => (int)_positionPast2.X,
-					TimePeriod.Past => (int)_positionPast1.X,
-					TimePeriod.Present => (int)_positionPres.X,
-					_ => throw new ArgumentOutOfRangeException(),
-				};
-			}
-			set
-			{
-				switch (_gameController.TimePeriod)
-				{
-					case TimePeriod.FarPast:
-						_positionPast2.X = value;
-						_positionPast1.X = value;
-						_positionPres.X = value;
-						break;
-					case TimePeriod.Past:
-						_positionPast1.X = value;
-						_positionPres.X = value;
-						break;
-					case TimePeriod.Present:
-						_positionPres.X = value;
-						break;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-		}
+    List<int> _animationFrames;
+    string _animationName;
+    Vector2 _positionPresent, _positionPast, _positionFarPast;
 
-		internal int Y
-		{
-			get
-			{
-				return _gameController.TimePeriod switch
-				{
-					TimePeriod.FarPast => (int)_positionPast2.Y,
-					TimePeriod.Past => (int)_positionPast1.Y,
-					TimePeriod.Present => (int)_positionPres.Y,
-					_ => throw new ArgumentOutOfRangeException(),
-				};
-			}
-		}
+    internal Wardrobe(string saveString)
+    {
+        var x = 0;
+        var y = 0;
+        var name = "WR";
+        var link = "WR";
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
 
-		internal Rectangle EnterBox => new Rectangle(X + 24, Y + 9, 23, 73);
+        while (!line.StartsWith("EndWardrobe", StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = int.TryParse(line[2..], out x);
 
-		internal Rectangle PushBox => new Rectangle(X + 2, Y + 2, 65, 78);
+            else if (line.StartsWith("y:", StringComparison.Ordinal)) _ = int.TryParse(line[2..], out y);
 
-		//Drawable
-		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wardrobe");
-		string _linkedName;
-		bool _locked;
-		readonly bool _startLocked;
-		int _frameTime;
-		int _frameLength;
-		int _frame;
-		string _animName;
-		List<int> _animFrames;
+            else if (line.StartsWith("name:", StringComparison.Ordinal)) name = line[5..].Trim();
 
-		internal enum WardrobeState
-		{
-			Closed,
-			Opening,
-			Open
-		}
+            else if (line.StartsWith("locked:", StringComparison.Ordinal))
+                _ = bool.TryParse(line[7..], out _startLocked);
 
-		internal WardrobeState State;
+            if (line.StartsWith("link:", StringComparison.Ordinal)) link = line[5..].Trim();
+            if (line.StartsWith("keyName:", StringComparison.Ordinal)) _keyName = line[8..].Trim();
+        }
 
-		string Animation
-		{
-			set
-			{
-				if (!_sheet.HasAnimation(value) || _animName == value) return;
+        IsLocked = _startLocked;
 
-				_animName = value;
-				_animFrames = _sheet.GetAnimation(_animName);
-				_frame = 0;
-				_frameTime = 0;
-			}
-		}
+        if (IsLocked)
+        {
+            AnimationName = "wardrobe_closed";
+            State = WardrobeState.Closed;
+        }
+        else
+        {
+            AnimationName = "wardrobe_opening";
+            State = WardrobeState.Open;
+        }
 
-		# endregion
+        _startingPosition = new(x, y);
+        _positionPresent = new(x, y);
+        _positionPast = new(x, y);
+        _positionFarPast = new(x, y);
+        if (Wardrobes.ContainsKey(name))
+            Wardrobes.Remove(name);
+        Wardrobes.Add(name, this);
+        _linkedName = link;
+    }
 
-		# region Constructor
+    internal enum WardrobeState
+    {
+        Closed,
+        Opening,
+        Open
+    }
 
-		internal Wardrobe(string saveString)
-		{
-			var x = 0;
-			var y = 0;
-			var name = "WR";
-			var link = "WR";
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			var lineNum = 0;
-			var line = "";
+    public Rectangle Bounds => new((int)Position.X + 2, (int)Position.Y + 2, 65, 78);
 
-			while (!line.StartsWith("EndWardrobe", StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						x = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public bool IsSolid => false;
 
-				if (line.StartsWith("y:", StringComparison.Ordinal))
-					try
-					{
-						y = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    internal Vector2 Position
+    {
+        get
+        {
+            return _gameController.TimePeriod switch
+            {
+                TimePeriod.FarPast => _positionFarPast,
+                TimePeriod.Past => _positionPast,
+                TimePeriod.Present => _positionPresent,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+    }
 
-				if (line.StartsWith("name:", StringComparison.Ordinal)) name = line.Substring(5).Trim();
-				if (line.StartsWith("locked:", StringComparison.Ordinal))
-					try
-					{
-						_startLocked = bool.Parse(line.Substring(7));
-					}
-					catch (FormatException)
-					{
-					}
+    internal int X
+    {
+        set
+        {
+            switch (_gameController.TimePeriod)
+            {
+                case TimePeriod.FarPast:
+                    _positionFarPast.X = value;
+                    _positionPast.X = value;
+                    _positionPresent.X = value;
+                    break;
+                case TimePeriod.Past:
+                    _positionPast.X = value;
+                    _positionPresent.X = value;
+                    break;
+                case TimePeriod.Present:
+                    _positionPresent.X = value;
+                    break;
+            }
+        }
+    }
 
-				if (line.StartsWith("link:", StringComparison.Ordinal)) link = line.Substring(5).Trim();
-				if (line.StartsWith("keyName:", StringComparison.Ordinal)) _keyName = line.Substring(8).Trim();
-			}
+    internal Rectangle EnterBox => new((int)Position.X + 24, (int)Position.Y + 9, 23, 73);
 
-			_locked = _startLocked;
+    internal Wardrobe LinkedWardrobe => Wardrobes.TryGetValue(_linkedName, out var w) ? w : null;
 
-			if (_locked)
-			{
-				Animation = "wardrobeclosed";
-				State = WardrobeState.Closed;
-			}
-			else
-			{
-				Animation = "wardrobeopening";
-				State = WardrobeState.Open;
-			}
+    internal bool IsLocked { get; private set; }
 
-			_startPos = new Vector2(x, y);
-			_positionPres = new Vector2(x, y);
-			_positionPast1 = new Vector2(x, y);
-			_positionPast2 = new Vector2(x, y);
-			if (Wardrobes.ContainsKey(name))
-				Wardrobes.Remove(name);
-			Wardrobes.Add(name, this);
-			SetLinkedWr(link);
-		}
+    string AnimationName
+    {
+        set
+        {
+            if (!_spriteSheet.HasAnimation(value) || _animationName == value) return;
 
-		public void Reset()
-		{
-			_positionPres = new Vector2(_startPos.X, _startPos.Y);
-			_positionPast1 = new Vector2(_startPos.X, _startPos.Y);
-			_positionPast2 = new Vector2(_startPos.X, _startPos.Y);
-			_locked = _startLocked;
+            _animationName = value;
+            _animationFrames = _spriteSheet.GetAnimation(_animationName);
+            _frame = 0;
+            _frameTime = 0;
+        }
+    }
 
-			if (_startLocked)
-			{
-				Animation = "wardrobeclosed";
-				State = WardrobeState.Closed;
-			}
-			else
-			{
-				Animation = "wardrobeopening";
-				State = WardrobeState.Open;
-			}
-		}
+    public void Move(float movement)
+    {
+        switch (_gameController.TimePeriod)
+        {
+            case TimePeriod.FarPast:
+                _positionFarPast.X += movement;
+                _positionPast.X = _positionFarPast.X;
+                _positionPresent.X = _positionFarPast.X;
+                break;
+            case TimePeriod.Past:
+                _positionPast.X += movement;
+                _positionPresent.X = _positionPast.X;
+                break;
+            case TimePeriod.Present:
+                _positionPresent.X += movement;
+                break;
+        }
+    }
 
-		# endregion
+    public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_spriteSheet.Image, Position,
+        _spriteSheet
+            .GetSprite(_animationFrames
+                .ElementAt(_frame)), tint,
+        0f, new(), 1f, SpriteEffects.None,
+        DrawLayer.Wardrobe);
 
-		# region Methods
+    public void Interact()
+    {
+        if (_gameController.Bruce.Bounds.Intersects(EnterBox))
+        {
+            if (!IsLocked && LinkedWardrobe?.IsLocked == false &&
+                !_gameController.CollidingWithSolid(LinkedWardrobe.EnterBox))
+                _gameController.Bruce.Teleport(this);
+        }
+        else
+            _gameController.Bruce.Push(this);
+    }
 
-		//Collideable
-		public Rectangle GetBounds() => PushBox;
+    public void Reset()
+    {
+        _positionPresent = new(_startingPosition.X, _startingPosition.Y);
+        _positionPast = new(_startingPosition.X, _startingPosition.Y);
+        _positionFarPast = new(_startingPosition.X, _startingPosition.Y);
+        IsLocked = _startLocked;
 
-		public bool IsSolid() => false;
+        if (_startLocked)
+        {
+            AnimationName = "wardrobe_closed";
+            State = WardrobeState.Closed;
+        }
+        else
+        {
+            AnimationName = "wardrobe_opening";
+            State = WardrobeState.Open;
+        }
+    }
 
-		//Drawable
+    public void Update(GameTime time)
+    {
+        _frameTime += time.ElapsedGameTime.Milliseconds;
 
-		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, new Vector2(X, Y),
-																			_sheet
-																			   .GetSprite(_animFrames
-																							 .ElementAt(_frame)), tint,
-																			0f, new Vector2(), 1f, SpriteEffects.None,
-																			DrawLayer.Wardrobe);
+        if (!string.IsNullOrEmpty(_keyName) && DoorKey.GetKey(_keyName)?.PickedUp == true &&
+            State == WardrobeState.Closed)
+            State = WardrobeState.Opening;
 
-		//Updatable
-		public void Update(GameTime time)
-		{
-			_frameTime += time.ElapsedGameTime.Milliseconds;
+        switch (State)
+        {
+            case WardrobeState.Open:
+                AnimationName = "wardrobe_open";
+                break;
+            case WardrobeState.Opening:
+                _frameLength = 100;
+                if (_frame == 2)
+                {
+                    AnimationName = "wardrobe_open";
+                    State = WardrobeState.Open;
+                    UnlockObject();
+                }
+                else
+                    AnimationName = "wardrobe_opening";
 
-			if (_keyName != "")
-			{
-				var k = DoorKey.GetKey(_keyName);
-				if (k?.PickedUp == true && State == WardrobeState.Closed) State = WardrobeState.Opening;
-			}
+                break;
+            case WardrobeState.Closed:
+                AnimationName = "wardrobe_closed";
+                break;
+        }
 
-			switch (State)
-			{
-				case WardrobeState.Open:
-					Animation = "wardrobeopen";
-					break;
-				case WardrobeState.Opening:
-					_frameLength = 100;
-					if (_frame == 2)
-					{
-						Animation = "wardrobeopen";
-						State = WardrobeState.Open;
-						UnlockObj();
-					}
-					else
-						Animation = "wardrobeopening";
-					break;
-				case WardrobeState.Closed:
-					Animation = "wardrobeclosed";
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+        if (_frameTime < _frameLength) return;
 
-			if (_frameTime < _frameLength) return;
+        _frameTime = 0;
+        _frame = (_frame + 1) % _animationFrames.Count;
+    }
 
-			_frameTime = 0;
-			_frame = (_frame + 1) % _animFrames.Count;
-		}
+    void UnlockObject()
+    {
+        IsLocked = false;
 
-		void SetLinkedWr(string linkedName) => _linkedName = linkedName;
-
-		internal Wardrobe GetLinkedWr()
-		{
-			Wardrobe w = null;
-			if (Wardrobes.ContainsKey(_linkedName))
-				Wardrobes.TryGetValue(_linkedName, out w);
-			return w;
-		}
-
-		void UnlockObj()
-		{
-			_locked = false;
-
-			_soundManager.PlaySound("Wardrobe Unlock");
-		}
-
-		internal bool IsLocked() => _locked;
-
-		public void Interact()
-		{
-			var player = _gameController.Player;
-			if (Rectangle.Intersect(player.GetBounds(), EnterBox).Width != 0)
-			{
-				var linkedWr = GetLinkedWr();
-				if (_locked || !linkedWr?.IsLocked() != true ||
-					_gameController.CollidingWithSolid(linkedWr.EnterBox)) return;
-
-				player.State = Boy.BoyState.Teleport;
-				player.X = X + 16;
-
-				_soundManager.PlaySound("Wardrobe Travel", false, true);
-			}
-			else
-			{
-				player.State = _gameController.CollidingWithSolid(PushBox, false)
-								   ? Boy.BoyState.PushingStill
-								   : Boy.BoyState.PushWalk;
-				if (player.X > X)
-				{
-					player.X = X + 67;
-					player.Direction = Direction.Left;
-				}
-				else
-				{
-					player.X = X - 36;
-					player.Direction = Direction.Right;
-				}
-			}
-		}
-		# endregion
-	}
+        _soundManager.PlaySound("Wardrobe Unlock");
+    }
 }

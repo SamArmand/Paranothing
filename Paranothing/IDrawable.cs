@@ -1,19 +1,18 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+/// <summary>
+///     An interface for any object that can be drawn.
+///     The implementing class decides how it handles the drawing, but it must implement the Draw() method.
+/// </summary>
+interface IDrawable
 {
     /// <summary>
-    /// An interface for any object that can be drawn.
-    /// The implementing class decides how it handles the drawing, but it must implement the draw() method.
+    ///     Draws the game object.
     /// </summary>
-    interface IDrawable
-    {
-        /// <summary>
-        /// Draw the object
-        /// </summary>
-        /// <param name="renderer">The spritebatch with which to draw</param>
-        /// <param name="tint">A colour to use as a tint</param>
-        void Draw(SpriteBatch renderer, Color tint);
-    }
+    /// <param name="spriteBatch">The sprite batch with which to draw the object.</param>
+    /// <param name="tint">A colour to use as a tint</param>
+    void Draw(SpriteBatch spriteBatch, Color tint);
 }

@@ -1,45 +1,43 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class SoundManager
 {
-	sealed class SoundManager
-	{
-		static SoundManager _instance;
+    static SoundManager _instance;
 
-		internal Dictionary<string, SoundEffect> SoundEffects { get; } = new Dictionary<string, SoundEffect>();
+    internal static SoundManager Instance => _instance ??= new();
 
-		Dictionary<string, SoundEffectInstance> SoundEffectInstances { get; } =
-			new Dictionary<string, SoundEffectInstance>();
+    internal Dictionary<string, SoundEffect> SoundEffects { get; } = new();
 
-		internal static SoundManager Instance() => _instance ??= new SoundManager();
+    Dictionary<string, SoundEffectInstance> SoundEffectInstances { get; } = new();
 
-		internal void PlaySound(string soundName, bool isLooped = false, bool force = false)
-		{
-			if (!GameTitle.ToggleSound) return;
+    internal void PlaySound(string soundName, bool isLooped = false, bool force = false)
+    {
+        if (!GameTitle.ToggleSound) return;
 
-			if (!SoundEffectInstances.ContainsKey(soundName))
-				SoundEffectInstances[soundName] = SoundEffects[soundName].CreateInstance();
+        if (!SoundEffectInstances.ContainsKey(soundName))
+            SoundEffectInstances[soundName] = SoundEffects[soundName].CreateInstance();
 
-			var soundEffectInstance = SoundEffectInstances[soundName];
+        var soundEffectInstance = SoundEffectInstances[soundName];
 
-			if (soundEffectInstance.State == SoundState.Playing)
-			{
-				if (force)
-					StopSound(soundName);
-				else
-					return;
-			}
+        if (soundEffectInstance.State == SoundState.Playing)
+        {
+            if (force)
+                StopSound(soundName);
+            else
+                return;
+        }
 
-			soundEffectInstance.IsLooped = isLooped;
-			soundEffectInstance.Play();
-		}
+        soundEffectInstance.IsLooped = isLooped;
+        soundEffectInstance.Play();
+    }
 
-		internal void StopSound(string soundName)
-		{
-			if (GameTitle.ToggleSound && SoundEffectInstances.ContainsKey(soundName) &&
-				SoundEffectInstances[soundName].State == SoundState.Playing)
-				SoundEffectInstances[soundName].Stop();
-		}
-	}
+    internal void StopSound(string soundName)
+    {
+        if (GameTitle.ToggleSound && SoundEffectInstances.ContainsKey(soundName) &&
+            SoundEffectInstances[soundName].State == SoundState.Playing)
+            SoundEffectInstances[soundName].Stop();
+    }
 }

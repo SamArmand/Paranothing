@@ -2,109 +2,55 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable
 {
-	sealed class Stairs : IDrawable, ICollideable, IUpdatable, IInteractable, ISaveable
-	{
-		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("stair");
-		Vector2 _position;
+    internal readonly Direction Direction = Direction.Left;
 
-		internal int X
-		{
-			get => (int) _position.X;
-			private set => _position.X = value;
-		}
+    readonly bool _startIntact = true;
+    readonly GameController _gameController = GameController.Instance;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("stairs");
+    readonly Vector2 _position;
 
-		internal int Y
-		{
-			get => (int) _position.Y;
-			private set => _position.Y = value;
-		}
+    internal Stairs(string saveString)
+    {
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith("EndStairs", StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.X);
 
-		readonly bool _startIntact = true;
-		bool _intact = true;
-		public readonly Direction Direction = Direction.Left;
+            else if (line.StartsWith("y:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.Y);
 
-		internal Stairs(string saveString)
-		{
-			X = 0;
-			Y = 0;
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			var lineNum = 0;
-			var line = "";
-			while (!line.StartsWith("EndStair", StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						X = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+            else if (line.StartsWith("direction:", StringComparison.Ordinal))
+                Direction = line[10..].Trim() == "Right" ? Direction.Right : Direction.Left;
 
-				if (line.StartsWith("y:", StringComparison.Ordinal))
-					try
-					{
-						Y = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+            else if (line.StartsWith("intact:", StringComparison.Ordinal))
+                _ = bool.TryParse(line[7..], out _startIntact);
+        }
+    }
 
-				if (line.StartsWith("direction:", StringComparison.Ordinal))
-					Direction = line.Substring(10).Trim() == "Right" ? Direction.Right : Direction.Left;
+    public Rectangle Bounds => new((int)_position.X, (int)_position.Y, 146, 112);
 
-				if (!line.StartsWith("intact:", StringComparison.Ordinal)) continue;
+    public bool IsSolid { get; private set; } = true;
 
-				try
-				{
-					_startIntact = bool.Parse(line.Substring(7));
-				}
-				catch (FormatException)
-				{
-				}
-			}
-		}
+    internal Vector2 Position => _position;
 
-		public void Reset()
-		{
-		}
+    internal Rectangle SmallBounds =>
+        new((int)_position.X + (Direction is Direction.Left ? 0 : 24),
+            (int)_position.Y + 22, 122, 190);
 
-		public void Update(GameTime time) => _intact = _gameController.TimePeriod == TimePeriod.Past || _startIntact;
+    public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_spriteSheet.Image, _position,
+        _spriteSheet.GetSprite(IsSolid ? 0 : 1), tint, 0f,
+        new(), 1f,
+        Direction == Direction.Left
+            ? SpriteEffects.FlipHorizontally
+            : SpriteEffects.None, DrawLayer.Stairs);
 
-		public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, _position,
-																			_sheet.GetSprite(_intact ? 0 : 1), tint, 0f,
-																			new Vector2(), 1f,
-																			Direction == Direction.Left
-																				? SpriteEffects.FlipHorizontally
-																				: SpriteEffects.None, DrawLayer.Stairs);
+    public void Interact() => _gameController.Bruce.Climb(this);
 
-		public bool IsSolid() => _intact;
-
-		public Rectangle GetBounds() => new Rectangle((int) _position.X, (int) _position.Y, 146, 112);
-
-		internal Rectangle GetSmallBounds() => new Rectangle((int) _position.X + (Direction == Direction.Left ? 0 : 24),
-															 (int) _position.Y + 22, 122, 190);
-
-		public void Interact()
-		{
-			var player = _gameController.Player;
-			var playerX = player.X;
-
-			player.State = Direction == Direction.Left ? Boy.BoyState.StairsLeft : Boy.BoyState.StairsRight;
-			if (playerX + 30 >= X && playerX + 8 <= X)
-			{
-				player.Direction = Direction.Right;
-				player.X = X - 14;
-			}
-			else if (playerX + 30 >= X + GetBounds().Width && playerX + 8 <= X + GetBounds().Width)
-			{
-				player.Direction = Direction.Left;
-				player.X = X + GetSmallBounds().Width;
-			}
-		}
-	}
+    public void Update(GameTime time) => IsSolid = _gameController.TimePeriod == TimePeriod.Past || _startIntact;
 }

@@ -1,9 +1,8 @@
-﻿namespace Paranothing
+﻿namespace Paranothing;
+
+enum TimePeriod
 {
-	enum TimePeriod
-	{
-		FarPast,
-		Past,
-		Present
-	}
+    FarPast,
+    Past,
+    Present
 }

@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Effects/Greyscale.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/Greyscale.fx
+
 #begin Fonts/GameFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -100,42 +106,6 @@
 /processorParam:Quality=Best
 /build:Sounds/Soundtrack.mp3
 
-#begin Sounds/Step 1.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 1.wav
-
-#begin Sounds/Step 2.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 2.wav
-
-#begin Sounds/Step 3.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 3.wav
-
-#begin Sounds/Step 4.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 4.wav
-
-#begin Sounds/Step 5.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 5.wav
-
-#begin Sounds/Step 6.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:Sounds/Step 6.wav
-
 #begin Sounds/Wardrobe Travel.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -148,7 +118,7 @@
 /processorParam:Quality=Best
 /build:Sounds/Wardrobe Unlock.wav
 
-#begin Sprites/actions.png
+#begin Sprites/Actions.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -158,7 +128,19 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/actions.png
+/build:Sprites/Actions.png
+
+#begin Sprites/Bookcase.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Bookcase.png
 
 #begin Sprites/Bruce.png
 /importer:TextureImporter
@@ -171,18 +153,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Bruce.png
-
-#begin Sprites/BruceSheet.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/BruceSheet.png
 
 #begin Sprites/Button.png
 /importer:TextureImporter
@@ -208,7 +178,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Chair.png
 
-#begin Sprites/ChairPast.png
+#begin Sprites/Controller.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -218,9 +188,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/ChairPast.png
+/build:Sprites/Controller.png
 
-#begin Sprites/ChairPresent.png
+#begin Sprites/Door.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -230,9 +200,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/ChairPresent.png
+/build:Sprites/Door.png
 
-#begin Sprites/controller.png
+#begin Sprites/Floor.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -242,103 +212,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/controller.png
-
-#begin Sprites/door.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/door.png
-
-#begin Sprites/Door_Final.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/Door_Final.png
-
-#begin Sprites/DoorPast.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/DoorPast.png
-
-#begin Sprites/DoorPresent.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/DoorPresent.png
-
-#begin Sprites/floor.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/floor.png
-
-#begin Sprites/FloorPast.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/FloorPast.png
-
-#begin Sprites/FloorPresent.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/FloorPresent.png
-
-#begin Sprites/GameThumbnail.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/GameThumbnail.png
+/build:Sprites/Floor.png
 
 #begin Sprites/Key.png
 /importer:TextureImporter
@@ -351,30 +225,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Key.png
-
-#begin Sprites/KeyPast.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/KeyPast.png
-
-#begin Sprites/KeyPresent.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/KeyPresent.png
 
 #begin Sprites/Portrait.png
 /importer:TextureImporter
@@ -412,30 +262,6 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Rubble.png
 
-#begin Sprites/screenshot.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/screenshot.png
-
-#begin Sprites/screenshot_for_menu.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/screenshot_for_menu.png
-
 #begin Sprites/Shadow.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -447,18 +273,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Shadow.png
-
-#begin Sprites/sprite.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/sprite.png
 
 #begin Sprites/Staircase.png
 /importer:TextureImporter
@@ -472,7 +286,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Staircase.png
 
-#begin Sprites/StaircasePast.png
+#begin Sprites/Title Background.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -482,9 +296,9 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/StaircasePast.png
+/build:Sprites/Title Background.png
 
-#begin Sprites/StaircasePresent.png
+#begin Sprites/Wall.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -494,31 +308,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/StaircasePresent.png
-
-#begin Sprites/stairs_intact.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/stairs_intact.png
-
-#begin Sprites/wall.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/wall.png
+/build:Sprites/Wall.png
 
 #begin Sprites/Wallpaper.png
 /importer:TextureImporter
@@ -544,7 +334,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Wardrobe.png
 
-#begin Sprites/white.png
+#begin Sprites/White.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -554,5 +344,5 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/white.png
+/build:Sprites/White.png
 

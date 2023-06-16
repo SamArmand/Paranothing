@@ -4,254 +4,206 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Shadow : ICollideable, IUpdatable, IDrawable, IResetable
 {
-	sealed class Shadow : ICollideable, IUpdatable, IDrawable, ISaveable
-	{
-		# region Attributes
+    internal ShadowState State = ShadowState.Walk;
 
-		readonly GameController _gameController = GameController.GetInstance();
+    readonly GameController _gameController = GameController.Instance;
+    readonly int _patrolDistance;
+    readonly SoundManager _soundManager = SoundManager.Instance;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("shadow");
+    readonly Vector2 _startingPosition;
 
-		readonly SoundManager _soundManager = SoundManager.Instance();
+    Direction _direction;
+    int _distanceMoved;
+    int _frame;
+    int _frameLength;
+    int _frameTime;
+    int _moveSpeedX, _moveSpeedY;
+    List<int> _animationFrames;
+    string _animationName;
+    Vector2 _position;
+    Vector2 _soundPosition;
 
-		//Drawable
-		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("shadow");
-		int _frame;
-		int _frameLength;
-		int _frameTime;
-		string _animName;
-		List<int> _animFrames;
+    internal Vector2 Position => _position;
 
-		string Animation
-		{
-			get => _animName;
-			set
-			{
-				if (!_sheet.HasAnimation(value) || _animName == value) return;
+    internal Vector2 SoundPosition
+    {
+        set
+        {
+            _soundPosition = value;
+            State = ShadowState.SeekSound;
+            if (Animation == "walk")
+                Animation = "stop_walk";
 
-				_animName = value;
-				_animFrames = _sheet.GetAnimation(_animName);
-				_frame = 0;
-				_frameTime = 0;
-			}
-		}
+            _soundManager.StopSound("Shadow");
+            _soundManager.PlaySound("Shadow");
+        }
+    }
 
-		//Collideable
-		int _moveSpeedX, _moveSpeedY; // Pixels per animation frame
-		readonly Vector2 _startPos;
-		Vector2 _position;
-		Vector2 _soundPos;
-		readonly int _patrolDistance;
-		int _distMoved;
-		Rectangle Bounds => new Rectangle(X, Y + 7, 32, 74);
+    internal Shadow(string saveString)
+    {
+        Animation = "walk";
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith("EndShadow", StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal))
+                _ = float.TryParse(line[2..], out _position.X);
 
-		internal enum ShadowState
-		{
-			Idle,
-			Walk,
-			SeekSound
-		}
+            else if (line.StartsWith("y:", StringComparison.Ordinal))
+                _ = float.TryParse(line[2..], out _position.Y);
 
-		internal ShadowState State = ShadowState.Walk;
-		Direction _direction;
+            else if (line.StartsWith("patrolDist:", StringComparison.Ordinal))
+                _ = int.TryParse(line[11..], out _patrolDistance);
+        }
 
-		# endregion
+        _patrolDistance = Math.Abs(_patrolDistance);
+        _distanceMoved = _patrolDistance;
+        _startingPosition = _position;
+        _soundPosition = _position;
+    }
 
-		# region Constructor
+    internal enum ShadowState
+    {
+        Idle,
+        Walk,
+        SeekSound
+    }
 
-		internal Shadow(string saveString)
-		{
-			Animation = "walk";
-			X = 0;
-			Y = 0;
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			var lineNum = 0;
-			var line = "";
-			while (!line.StartsWith("EndShadow", StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						X = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public Rectangle Bounds => new((int)_position.X, (int)_position.Y + 7, 32, 74);
 
-				if (line.StartsWith("y:", StringComparison.Ordinal))
-					try
-					{
-						Y = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public bool IsSolid => false;
 
-				if (!line.StartsWith("patrolDist:", StringComparison.Ordinal)) continue;
+    string Animation
+    {
+        get => _animationName;
+        set
+        {
+            if (!_spriteSheet.HasAnimation(value) || _animationName == value) return;
 
-				try
-				{
-					_patrolDistance = int.Parse(line.Substring(11));
-				}
-				catch (FormatException)
-				{
-				}
-			}
+            _animationName = value;
+            _animationFrames = _spriteSheet.GetAnimation(_animationName);
+            _frame = 0;
+            _frameTime = 0;
+        }
+    }
 
-			if (_patrolDistance < 0)
-				_patrolDistance = -_patrolDistance;
-			_distMoved = _patrolDistance;
-			_startPos = new Vector2(X, Y);
-			_soundPos = new Vector2(X, Y);
-		}
+    public void Draw(SpriteBatch renderer, Color tint)
+    {
+        if (_gameController.TimePeriod == TimePeriod.Present)
+            renderer.Draw(_spriteSheet.Image, _position, _spriteSheet.GetSprite(_animationFrames.ElementAt(_frame)),
+                tint, 0f,
+                new(), 1f,
+                _direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+                DrawLayer.Player + 0.005f);
+    }
 
-		public void Reset()
-		{
-			_frame = 0;
-			_frameTime = 0;
-			_position = new Vector2(_startPos.X, _startPos.Y);
-			_soundPos = new Vector2(_startPos.X, _startPos.Y);
-			_distMoved = _patrolDistance;
-			State = ShadowState.Walk;
-			Animation = "walk";
-			_direction = Direction.Right;
-		}
+    public void Reset()
+    {
+        _frame = 0;
+        _frameTime = 0;
+        _position = _startingPosition;
+        _soundPosition = _startingPosition;
+        _distanceMoved = _patrolDistance;
+        State = ShadowState.Walk;
+        Animation = "walk";
+        _direction = Direction.Right;
+    }
 
-		# endregion
+    public void Update(GameTime time)
+    {
+        if (_gameController.TimePeriod != TimePeriod.Present) return;
 
-		# region Methods
+        _frameTime += time.ElapsedGameTime.Milliseconds;
+        switch (State)
+        {
+            case ShadowState.Idle:
+                if (Animation == "walk")
+                    Animation = "stop_walk";
+                if (Animation == "stop_walk" && _frame == 2)
+                    Animation = "stand";
+                _moveSpeedX = 0;
+                _moveSpeedY = 0;
+                _frameLength = 80;
+                break;
+            case ShadowState.Walk:
+                if (_patrolDistance != 0)
+                    if (Animation == "stop_walk" && _frame == 2 || Animation == "stand" || Animation == "walk")
+                    {
+                        _frameLength = 80;
+                        Animation = "walk";
+                        _moveSpeedX = 3;
+                        _moveSpeedY = 0;
+                    }
+                    else
+                        _moveSpeedX = 0;
+                else
+                    State = ShadowState.Idle;
 
-		//Accessors & Mutators
-		internal int X
-		{
-			get => (int) _position.X;
-			private set => _position.X = value;
-		}
+                break;
+            case ShadowState.SeekSound:
+                Animation = "walk";
+                _moveSpeedX = 3;
+                _moveSpeedY = 0;
+                var soundPositionX = _soundPosition.X;
+                var positionX = _position.X;
+                _direction = soundPositionX > positionX ? Direction.Right : Direction.Left;
+                if (Math.Abs(soundPositionX - positionX) < 3)
+                    State = ShadowState.Idle;
+                break;
+        }
 
-		internal int Y
-		{
-			get => (int) _position.Y;
-			private set => _position.Y = value;
-		}
+        if (_frameTime < _frameLength) return;
 
-		//Updatable
-		public void Update(GameTime time)
-		{
-			if (_gameController.TimePeriod != TimePeriod.Present) return;
+        var flip = _direction == Direction.Left ? -1 : 1;
 
-			_frameTime += time.ElapsedGameTime.Milliseconds;
-			switch (State)
-			{
-				case ShadowState.Idle:
-					if (Animation == "walk")
-						Animation = "stopwalk";
-					if (Animation == "stopwalk" && _frame == 2)
-						Animation = "stand";
-					_moveSpeedX = 0;
-					_moveSpeedY = 0;
-					_frameLength = 80;
-					break;
-				case ShadowState.Walk:
-					if (_patrolDistance != 0)
-						if (Animation == "stopwalk" && _frame == 2 || Animation == "stand" || Animation == "walk")
-						{
-							_frameLength = 80;
-							Animation = "walk";
-							_moveSpeedX = 3;
-							_moveSpeedY = 0;
-						}
-						else
-							_moveSpeedX = 0;
-					else
-						State = ShadowState.Idle;
+        _position.X += _moveSpeedX * flip;
+        _position.Y += _moveSpeedY * flip;
+        _frameTime = 0;
+        _frame = (_frame + 1) % _animationFrames.Count;
+        if (State == ShadowState.Walk && _patrolDistance != 0)
+        {
+            _distanceMoved += _moveSpeedX;
+            if (_distanceMoved >= _patrolDistance * 2)
+            {
+                Animation = "stop_walk";
+                _position.X -= (_patrolDistance * 2 - _distanceMoved) * flip;
+                _direction = _direction == Direction.Left ? Direction.Right : Direction.Left;
+                _distanceMoved = 0;
+            }
+        }
 
-					break;
-				case ShadowState.SeekSound:
-					Animation = "walk";
-					_moveSpeedX = 3;
-					_moveSpeedY = 0;
-					_direction = _soundPos.X > X ? Direction.Right : Direction.Left;
-					if (Math.Abs(_soundPos.X - X) < 3)
-						State = ShadowState.Idle;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+        if (!_gameController.CollidingWithSolid(Bounds, false)) return;
 
-			if (_frameTime < _frameLength) return;
+        switch (State)
+        {
+            case ShadowState.SeekSound:
+                State = ShadowState.Idle;
+                _position.X -= _moveSpeedX * flip;
+                _position.Y -= _moveSpeedY * flip;
+                break;
+            case ShadowState.Walk:
+            {
+                _distanceMoved = _patrolDistance * 2 - _distanceMoved - _moveSpeedX;
+                Animation = "stop_walk";
+                if (_direction == Direction.Left)
+                {
+                    _position.X += _moveSpeedX;
+                    _direction = Direction.Right;
+                }
+                else
+                {
+                    _position.X -= _moveSpeedX;
+                    _direction = Direction.Left;
+                }
 
-			var flip = 1;
-			if (_direction == Direction.Left)
-				flip = -1;
-			X += _moveSpeedX * flip;
-			Y += _moveSpeedY * flip;
-			_frameTime = 0;
-			_frame = (_frame + 1) % _animFrames.Count;
-			if (State == ShadowState.Walk && _patrolDistance != 0)
-			{
-				_distMoved += _moveSpeedX;
-				if (_distMoved >= _patrolDistance * 2)
-				{
-					Animation = "stopwalk";
-					X -= (_patrolDistance * 2 - _distMoved) * flip;
-					_direction = _direction == Direction.Left ? Direction.Right : Direction.Left;
-					_distMoved = 0;
-				}
-			}
-
-			if (!_gameController.CollidingWithSolid(GetBounds(), false)) return;
-
-			if (State == ShadowState.SeekSound)
-			{
-				State = ShadowState.Idle;
-				X -= _moveSpeedX * flip;
-				Y -= _moveSpeedY * flip;
-			}
-			else if (State == ShadowState.Walk)
-			{
-				_distMoved = _patrolDistance * 2 - _distMoved;
-				_distMoved -= _moveSpeedX;
-				Animation = "stopwalk";
-				if (_direction == Direction.Left)
-				{
-					X += _moveSpeedX;
-					_direction = Direction.Right;
-				}
-				else
-				{
-					X -= _moveSpeedX;
-					_direction = Direction.Left;
-				}
-			}
-		}
-
-		internal void StalkNoise(int x, int y)
-		{
-			_soundPos = new Vector2(x, y);
-			State = ShadowState.SeekSound;
-			if (Animation == "walk")
-				Animation = "stopwalk";
-
-			_soundManager.PlaySound("Shadow");
-		}
-
-		//Drawable
-
-		public void Draw(SpriteBatch renderer, Color tint)
-		{
-			if (_gameController.TimePeriod == TimePeriod.Present)
-				renderer.Draw(_sheet.Image, _position, _sheet.GetSprite(_animFrames.ElementAt(_frame)), tint, 0f,
-							  new Vector2(), 1f,
-							  _direction == Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
-							  DrawLayer.Player + 0.005f);
-		}
-
-		//Collideable
-		public Rectangle GetBounds() => Bounds;
-
-		public bool IsSolid() => false;
-
-		# endregion
-	}
+                break;
+            }
+        }
+    }
 }

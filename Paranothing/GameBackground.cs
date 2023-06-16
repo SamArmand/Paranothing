@@ -1,35 +1,20 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+class GameBackground
 {
-	class GameBackground
-	{
-		# region Attributes
+    readonly Texture2D _backgroundTexture;
 
-		readonly Texture2D _backgroundTexture;
+    protected GameBackground(Texture2D texture, Rectangle rectangle)
+    {
+        _backgroundTexture = texture;
+        BackgoundRectangle = rectangle;
+    }
 
-		# endregion
+    protected Rectangle BackgoundRectangle { get; }
 
-		# region Constructor
-
-		protected GameBackground(Texture2D inTexture, Rectangle inRect)
-		{
-			_backgroundTexture = inTexture;
-			BackgoundRectangle = inRect;
-		}
-
-		# endregion
-
-		# region Methods
-
-		//Accessor
-		protected Rectangle BackgoundRectangle { get; }
-
-		//Draw
-		protected void Draw(SpriteBatch spriteBatch) =>
-			spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
-
-		# endregion
-	}
+    protected void Draw(SpriteBatch spriteBatch) =>
+        spriteBatch.Draw(_backgroundTexture, BackgoundRectangle, Color.White);
 }

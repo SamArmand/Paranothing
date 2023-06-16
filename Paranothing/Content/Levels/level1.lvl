@@ -95,26 +95,26 @@ locked:true
 keyName:EndDoorKey
 EndDoor
 
-StartStair
+StartStairs
 x:8
 y:-30
 direction:Left
 intact:true
-EndStair
+EndStairs
 
-StartStair
+StartStairs
 x:160
 y:60
 direction:Right
 intact:true
-EndStair
+EndStairs
 
-StartStair
+StartStairs
 x:500
 y:60
 direction:Right
 intact:true
-EndStair
+EndStairs
 
 StartWardrobe
 x:190

@@ -1,10 +1,9 @@
-﻿namespace Paranothing
+﻿namespace Paranothing;
+
+enum Direction
 {
-	enum Direction
-	{
-		Left,
-		Right,
-		Up,
-		Down
-	}
+    Left,
+    Right,
+    Up,
+    Down
 }

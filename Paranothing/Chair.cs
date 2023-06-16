@@ -2,240 +2,186 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Chair : ICollideable, IUpdatable, IDrawable, IResetable
 {
-    sealed class Chair : ICollideable, IUpdatable, IDrawable, IInteractable, ISaveable
+    const int MoveLength = 70;
+    const int Speed = 3;
+
+    internal ChairState State;
+
+    readonly ActionBubble _actionBubble = new();
+    readonly GameController _gameController = GameController.Instance;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("chair");
+    readonly Vector2 _startingPosition;
+
+    int _moveTime;
+    Vector2 _positionPast, _positionFarPast, _positionPresent, _movementDirection;
+
+    internal Chair(string saveString)
     {
-        # region Attributes
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
 
-        readonly GameController _gameController = GameController.GetInstance();
-
-        //Collidable
-        readonly Vector2 _startPos;
-        Vector2 _positionPres;
-        Vector2 _positionPast1;
-        Vector2 _positionPast2;
-        int _tX, _tY;
-        const int Speed = 3;
-        int _moveTime;
-        const int Movelength = 70;
-
-        Rectangle Bounds => new Rectangle(X, Y, 40, 52);
-
-        //Drawable
-        readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("chair");
-
-        internal enum ChairsState { Idle, Falling, Moving }
-
-        internal ChairsState State;
-        readonly ActionBubble _bubble = new ActionBubble();
-
-        # endregion
-
-        # region Constructor
-
-        internal Chair(string saveString)
+        while (!line.StartsWith("EndChair", StringComparison.Ordinal) && lineNum < lines.Length)
         {
-            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var x = 0;
-            var y = 0;
-            var lineNum = 0;
-            var line = "";
-            while (!line.StartsWith("EndChairs", StringComparison.Ordinal) && lineNum < lines.Length)
-            {
-                line = lines[lineNum++];
-                if (line.StartsWith("x:", StringComparison.Ordinal))
-                    try { x = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _startingPosition.X);
 
-                if (!line.StartsWith("y:", StringComparison.Ordinal)) continue;
-
-                try { y = int.Parse(line.Substring(2)); }
-                catch (FormatException) { }
-            }
-            _startPos = new Vector2(x, y);
-            _positionPres = new Vector2(x, y);
-            _positionPast1 = new Vector2(x, y);
-            _positionPast2 = new Vector2(x, y);
-            _bubble.Chair = this;
+            else if (line.StartsWith("y:", StringComparison.Ordinal))
+                _ = float.TryParse(line[2..], out _startingPosition.Y);
         }
 
-        # endregion
+        _positionPresent = _startingPosition;
+        _positionPast = _startingPosition;
+        _positionFarPast = _startingPosition;
+        _actionBubble.Chair = this;
+    }
 
-        # region Methods
+    internal enum ChairState
+    {
+        Idle,
+        Falling,
+        Moving
+    }
 
-        //Accessors & Mutators
-        internal int X
+    public Rectangle Bounds => new((int)Position.X, (int)Position.Y, 40, 52);
+
+    public bool IsSolid => false;
+
+    internal Vector2 Position
+    {
+        get
         {
-            get
+            return _gameController.TimePeriod switch
             {
-				return _gameController.TimePeriod switch
-				{
-					TimePeriod.FarPast => (int)_positionPast2.X,
-					TimePeriod.Past => (int)_positionPast1.X,
-					TimePeriod.Present => (int)_positionPres.X,
-					_ => 0,
-				};
-			}
-            private set
-            {
-                switch (_gameController.TimePeriod)
+                TimePeriod.FarPast => _positionFarPast,
+                TimePeriod.Past => _positionPast,
+                TimePeriod.Present => _positionPresent,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+    }
+
+    public void Draw(SpriteBatch renderer, Color tint)
+    {
+        renderer.Draw(_spriteSheet.Image, Position,
+            _gameController.TimePeriod == TimePeriod.Present ? _spriteSheet.GetSprite(1) : _spriteSheet.GetSprite(0),
+            tint, 0f,
+            new(), 1f, SpriteEffects.None, DrawLayer.Chairs);
+        _actionBubble.Draw(renderer, tint);
+    }
+
+    public void Reset()
+    {
+        _positionPresent = new(_startingPosition.X, _startingPosition.Y);
+        _positionPast = new(_startingPosition.X, _startingPosition.Y);
+        _positionFarPast = new(_startingPosition.X, _startingPosition.Y);
+    }
+
+    public void Update(GameTime time)
+    {
+        switch (State)
+        {
+            case ChairState.Idle:
+
+                var bruce = _gameController.Bruce;
+                var nearestChair = bruce.NearestChair;
+
+                if (nearestChair != null && nearestChair != this)
                 {
-                    case TimePeriod.FarPast:
-                        _positionPast2.X = value;
-                        _positionPast1.X = value;
-                        _positionPres.X = value;
-                        break;
-                    case TimePeriod.Past:
-                        _positionPast1.X = value;
-                        _positionPres.X = value;
-                        break;
-                    case TimePeriod.Present:
-                        _positionPres.X = value;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    if (nearestChair.State == ChairState.Idle)
+                    {
+                        var brucePosition = bruce.Position;
+                        var brucePositionX = brucePosition.X;
+                        var brucePositionY = brucePosition.Y;
+                        var nearestChairPosition = nearestChair.Position;
+
+                        if (new Vector2(brucePositionX - Position.X, brucePositionY - Position.Y).LengthSquared() <
+                            new Vector2(brucePositionX - nearestChairPosition.X,
+                                brucePositionY - nearestChairPosition.Y).LengthSquared())
+                        {
+                            bruce.NearestChair = this;
+                            _actionBubble.IsVisible = true;
+                            _actionBubble.SetAction(ActionBubble.BubbleAction.Chair, false);
+                        }
+                        else
+                            _actionBubble.IsVisible = false;
+                    }
                 }
-            }
-        }
-        internal int Y
-        {
-            get
-            {
-				return _gameController.TimePeriod switch
-				{
-					TimePeriod.FarPast => (int)_positionPast2.Y,
-					TimePeriod.Past => (int)_positionPast1.Y,
-					TimePeriod.Present => (int)_positionPres.Y,
-					_ => 0,
-				};
-			}
-            set
-            {
-                switch (_gameController.TimePeriod)
+                else
                 {
-                    case TimePeriod.FarPast:
-                        _positionPast2.Y = value;
-                        _positionPast1.Y = value;
-                        _positionPres.Y = value;
-                        break;
-                    case TimePeriod.Past:
-                        _positionPast1.Y = value;
-                        _positionPres.Y = value;
-                        break;
-                    case TimePeriod.Present:
-                        _positionPres.Y = value;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    bruce.NearestChair = this;
+                    _actionBubble.IsVisible = true;
+                    _actionBubble.SetAction(ActionBubble.BubbleAction.Chair, false);
                 }
-            }
+
+                break;
+            case ChairState.Falling:
+                _actionBubble.IsVisible = false;
+                Move(Vector2.UnitY);
+                break;
+            case ChairState.Moving:
+                _actionBubble.IsVisible = false;
+                _moveTime += time.ElapsedGameTime.Milliseconds;
+                if (_moveTime >= MoveLength)
+                {
+                    Move(_movementDirection * Speed);
+                    _moveTime = 0;
+
+                    var bounds = Bounds;
+
+                    var smallerBound = new Rectangle((int)Position.X + 2, (int)Position.Y + 2, bounds.Width - 4,
+                        bounds.Height - 4);
+                    if (_gameController.CollidingWithSolid(smallerBound, false))
+                        Move(_movementDirection * -Speed);
+
+                    _movementDirection = Vector2.Zero;
+                }
+
+                break;
         }
+    }
 
-        //Collideable
-        public Rectangle GetBounds() => Bounds;
-        public bool IsSolid() => false;
-
-        public void Draw(SpriteBatch renderer, Color tint)
+    internal void Move(Direction direction)
+    {
+        switch (direction)
         {
-            renderer.Draw(_sheet.Image, new Vector2(X, Y),
-                _gameController.TimePeriod == TimePeriod.Present ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
-                new Vector2(), 1f, SpriteEffects.None, DrawLayer.Chairs);
-            _bubble.Draw(renderer, tint);
+            case Direction.Up:
+                _movementDirection.Y = -1;
+                break;
+            case Direction.Down:
+                _movementDirection.Y = 1;
+                break;
+            case Direction.Left:
+                _movementDirection.X = -1;
+                break;
+            case Direction.Right:
+                _movementDirection.X = 1;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
         }
+    }
 
-        //Updatable
-        public void Update(GameTime time)
+    internal void Move(Vector2 velocity)
+    {
+        switch (_gameController.TimePeriod)
         {
-            var player = _gameController.Player;
-            switch (State)
-            {
-                case ChairsState.Idle:
-                    if (player.NearestChair != null && player.NearestChair != this)
-                    {
-                        if (player.NearestChair.State == ChairsState.Idle)
-                        {
-                            var oldDist = new Vector2(player.X - player.NearestChair.X, player.Y - player.NearestChair.Y);
-                            var newDist = new Vector2(player.X - X, player.Y - Y);
-                            if (newDist.LengthSquared() < oldDist.LengthSquared())
-                            {
-                                player.NearestChair = this;
-                                _bubble.Show();
-                                _bubble.SetAction(ActionBubble.BubbleAction.Chair, false);
-                            }
-                            else
-                                _bubble.Hide();
-                        }
-                    }
-                    else
-                    {
-                        player.NearestChair = this;
-                        _bubble.Show();
-                        _bubble.SetAction(ActionBubble.BubbleAction.Chair, false);
-                    }
-                    break;
-                case ChairsState.Falling:
-                    _bubble.Hide();
-                    Y++;
-                    break;
-                case ChairsState.Moving:
-                    _bubble.Hide();
-                    _moveTime += time.ElapsedGameTime.Milliseconds;
-                    if (_moveTime >= Movelength)
-                    {
-                        X += _tX * Speed;
-                        Y += _tY * Speed;
-                        _moveTime = 0;
-
-                        var smallerBound = new Rectangle(X + 2, Y + 2, Bounds.Width - 4, Bounds.Height - 4);
-                        if (_gameController.CollidingWithSolid(smallerBound, false))
-                        {
-                            X -= _tX * Speed;
-                            Y -= _tY * Speed;
-                        }
-                        _tX = 0;
-                        _tY = 0;
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            case TimePeriod.FarPast:
+                _positionFarPast += velocity;
+                _positionPast = _positionFarPast;
+                _positionPresent = _positionFarPast;
+                break;
+            case TimePeriod.Past:
+                _positionPast += velocity;
+                _positionPresent = _positionPast;
+                break;
+            case TimePeriod.Present:
+                _positionPresent += velocity;
+                break;
         }
-
-        internal void Move(Direction direction)
-        {
-            switch (direction)
-            {
-                case Direction.Up:
-                    _tY = -1;
-                    break;
-                case Direction.Down:
-                    _tY = 1;
-                    break;
-                case Direction.Left:
-                    _tX = -1;
-                    break;
-                case Direction.Right:
-                    _tX = 1;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-            }
-        }
-
-        //Interactive
-        public void Interact()
-        {
-        }
-
-        //reset
-        public void Reset()
-        {
-            _positionPres = new Vector2(_startPos.X, _startPos.Y);
-            _positionPast1 = new Vector2(_startPos.X, _startPos.Y);
-            _positionPast2 = new Vector2(_startPos.X, _startPos.Y);
-        }
-
-        # endregion
     }
 }

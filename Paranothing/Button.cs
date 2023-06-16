@@ -3,98 +3,51 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Button : IDrawable, ICollideable
 {
-    sealed class Button : IDrawable, ICollideable, ISaveable, IInteractable
+    static readonly Dictionary<string, Button> Buttons = new();
+
+    internal bool StepOn = false;
+
+    readonly SpriteSheet _sheet = SpriteSheetManager.Instance.GetSheet("button");
+    readonly Vector2 _position;
+
+    internal Button(string saveString)
     {
-        # region Attributes
-
-        static readonly Dictionary<string, Button> Buttons = new Dictionary<string, Button>();
-
-        //Collideable
-        Vector2 _position;
-        Rectangle Bounds => new Rectangle(X, Y, 16, 5);
-
-        //Drawable
-        readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("button");
-        internal bool StepOn = false;
-
-        # endregion
-
-        # region Constructors
-
-        internal Button(string saveString)
+        var name = "BT";
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith("EndButton", StringComparison.Ordinal) && lineNum < lines.Length)
         {
-            X = 0;
-            Y = 0;
-            var name = "BT";
-            var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var lineNum = 0;
-            var line = "";
-            while (!line.StartsWith("EndButton", StringComparison.Ordinal) && lineNum < lines.Length)
-            {
-                line = lines[lineNum++];
-                if (line.StartsWith("x:", StringComparison.Ordinal))
-                    try { X = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.X);
 
-                if (line.StartsWith("y:", StringComparison.Ordinal))
-                    try { Y = int.Parse(line.Substring(2)); }
-                    catch (FormatException) { }
+            else if (line.StartsWith("y:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.Y);
 
-                if (line.StartsWith("name:", StringComparison.Ordinal)) name = line.Substring(5).Trim();
-            }
-
-            if (Buttons.ContainsKey(name))
-                Buttons.Remove(name);
-            Buttons.Add(name, this);
+            else if (line.StartsWith("name:", StringComparison.Ordinal)) name = line[5..].Trim();
         }
 
-        # endregion
-
-        # region Methods
-
-        //Accessors & Mutators
-        int X
-        {
-            get => (int)_position.X;
-            set => _position.X = value;
-        }
-
-        int Y
-        {
-            get => (int)_position.Y;
-            set => _position.Y = value;
-        }
-
-        //Collideable
-        public Rectangle GetBounds() => Bounds;
-
-        public bool IsSolid() => false;
-
-        public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, Bounds, StepOn ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
-                new Vector2(), SpriteEffects.None, DrawLayer.Key);
-
-        //Interactive
-        public void Interact()
-        {
-        }
-
-        internal static Button GetKey(string name)
-        {
-            Button button;
-            if (Buttons.ContainsKey(name))
-                Buttons.TryGetValue(name, out button);
-            else
-                button = null;
-            return button;
-        }
-
-        #endregion
-
-        //reset
-        public void Reset()
-        {
-        }
+        Buttons[name] = this;
     }
+
+    public Rectangle Bounds => new((int)_position.X, (int)_position.Y, 16, 5);
+
+    public bool IsSolid => false;
+
+    internal static Button GetKey(string name)
+    {
+        Button button;
+        if (Buttons.ContainsKey(name))
+            Buttons.TryGetValue(name, out button);
+        else
+            button = null;
+        return button;
+    }
+
+    public void Draw(SpriteBatch renderer, Color tint) => renderer.Draw(_sheet.Image, Bounds,
+        StepOn ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
+        new(), SpriteEffects.None, DrawLayer.Key);
 }

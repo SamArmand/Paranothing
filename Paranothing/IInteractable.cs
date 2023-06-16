@@ -1,7 +1,6 @@
-﻿namespace Paranothing
+﻿namespace Paranothing;
+
+interface IInteractable
 {
-    interface IInteractable
-    {
-        void Interact();
-    }
+    void Interact();
 }

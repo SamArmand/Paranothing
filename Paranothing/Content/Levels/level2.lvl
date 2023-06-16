@@ -141,10 +141,10 @@ y:150
 name:L2KeyB
 EndKey
 
-StartChairs
+StartChair
 x:226
 y:120
-EndChairs
+EndChair
 
 StartShadow
 x:340
@@ -158,8 +158,8 @@ y:1
 patrolDist:75
 EndShadow
 
-StartStair
+StartStairs
 x:8
 y:-30
 direction:Left
-EndStair
+EndStairs

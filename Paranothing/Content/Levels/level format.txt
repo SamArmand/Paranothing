@@ -35,12 +35,12 @@ patrolDist: Distance the shadow will patrol from the starting position.
 EndShadow
 
  - Stairs
-StartStair
+StartStairs
 x: X position of the stairs
 y: Y position of the stairs (Suggested: -30 or 60)
 direction: Direction the stairs are facing (Left or Right)
 intact: Whether the stairs are intact in the present
-EndStair
+EndStairs
 
  - Rubble
 StartRubble
@@ -49,10 +49,10 @@ y: Y position of the rubble
 EndRubble
 
  - Chairs
-StartChairs
+StartChair
 x: X position of the chair
 y: Y position of the chair
-EndChairs
+EndChair
 
  - Doors
 StartDoor

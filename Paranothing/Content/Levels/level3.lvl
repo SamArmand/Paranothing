@@ -84,11 +84,11 @@ width:900
 height:8
 EndFloor
 
-StartStair
+StartStairs
 x:158
 y:60
 direction:left
-EndStair
+EndStairs
 
 StartWardrobe
 x:65
@@ -181,7 +181,7 @@ y:91
 patrolDist:0
 EndShadow
 
-StartChairs
+StartChair
 x:360
 y:120
-EndChairs
+EndChair

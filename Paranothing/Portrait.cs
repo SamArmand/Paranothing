@@ -2,127 +2,92 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Portrait : IDrawable, ICollideable, IInteractable
 {
-	sealed class Portrait : IDrawable, ICollideable, IInteractable, ISaveable
-	{
-		readonly GameController _gameController = GameController.GetInstance();
-		readonly SoundManager _soundManager = SoundManager.Instance();
-		Vector2 _position;
+    internal Vector2 MovedPosition;
 
-		internal int X
-		{
-			get => (int) _position.X;
-			private set => _position.X = value;
-		}
+    readonly GameController _gameController = GameController.Instance;
+    readonly SoundManager _soundManager = SoundManager.Instance;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("portrait");
 
-		internal int Y
-		{
-			get => (int) _position.Y;
-			private set => _position.Y = value;
-		}
+    Vector2 _position;
 
-		readonly SpriteSheet _sheet;
-		internal bool WasMoved { get; }
-		internal Vector2 MovedPos;
-		internal TimePeriod InTime { get; }
-		internal TimePeriod SendTime { get; }
+    internal Portrait(string saveString, string str) => ParseString(saveString, str);
 
-		internal Portrait(string saveString, string str)
-		{
-			SendTime = TimePeriod.Past;
-			ParseString(saveString, str);
-			_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
-		}
+    internal Portrait(string saveString, TimePeriod period)
+    {
+        switch (period)
+        {
+            case TimePeriod.Present:
+                ParseString(saveString, "EndPresentPortrait");
+                WasMoved = true;
+                InTime = TimePeriod.Present;
+                SendTime = TimePeriod.Past;
+                _spriteSheet = SpriteSheetManager.Instance.GetSheet("portrait");
+                break;
+            case TimePeriod.Past:
+                ParseString(saveString, "EndPastPortrait");
+                WasMoved = true;
+                InTime = TimePeriod.Past;
+                SendTime = TimePeriod.Past;
+                _spriteSheet = SpriteSheetManager.Instance.GetSheet("portrait");
+                break;
+            case TimePeriod.FarPast:
+                ParseString(saveString, "EndOldPortrait");
+                SendTime = TimePeriod.FarPast;
+                _spriteSheet = SpriteSheetManager.Instance.GetSheet("old_portrait");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(period), period, null);
+        }
+    }
 
-		//present past constructor
-		internal Portrait(string saveString, TimePeriod period)
-		{
-			switch (period)
-			{
-				case TimePeriod.Present:
-					ParseString(saveString, "EndPresentPortrait");
-					WasMoved = true;
-					InTime = TimePeriod.Present;
-					SendTime = TimePeriod.Past;
-					_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
-					break;
-				case TimePeriod.Past:
-					ParseString(saveString, "EndPastPortrait");
-					WasMoved = true;
-					InTime = TimePeriod.Past;
-					SendTime = TimePeriod.Past;
-					_sheet = SpriteSheetManager.GetInstance().GetSheet("portrait");
-					break;
-				case TimePeriod.FarPast:
-					ParseString(saveString, "EndOldPortrait");
-					SendTime = TimePeriod.FarPast;
-					_sheet = SpriteSheetManager.GetInstance().GetSheet("oldportrait");
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(period), period, null);
-			}
-		}
+    public Rectangle Bounds => new(X, Y, 35, 30);
 
-		void ParseString(string saveString, string str)
-		{
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			X = 0;
-			Y = 0;
-			var lineNum = 0;
-			var line = "";
-			while (!line.StartsWith(str, StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						X = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public bool IsSolid => false;
 
-				if (!line.StartsWith("y:", StringComparison.Ordinal)) continue;
+    internal int X => (int)_position.X;
 
-				try
-				{
-					Y = int.Parse(line.Substring(2));
-				}
-				catch (FormatException)
-				{
-				}
-			}
-		}
+    internal int Y => (int)_position.Y;
+    internal bool WasMoved { get; }
+    internal TimePeriod InTime { get; }
+    internal TimePeriod SendTime { get; } = TimePeriod.Past;
 
-		public void Reset()
-		{
-		}
+    public void Draw(SpriteBatch renderer, Color tint)
+    {
+        if ((!WasMoved || _gameController.TimePeriod == InTime) &&
+            !(_gameController.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast))
+            renderer.Draw(_spriteSheet.Image, _position,
+                _gameController.TimePeriod == TimePeriod.Present
+                    ? _spriteSheet.GetSprite(1)
+                    : _spriteSheet.GetSprite(0), tint, 0f,
+                new(), 1f, SpriteEffects.None, DrawLayer.Background);
+    }
 
-		public void Draw(SpriteBatch renderer, Color tint)
-		{
-			if ((!WasMoved || _gameController.TimePeriod == InTime) &&
-				!(_gameController.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast))
-				renderer.Draw(_sheet.Image, _position,
-							  _gameController.TimePeriod == TimePeriod.Present
-								  ? _sheet.GetSprite(1)
-								  : _sheet.GetSprite(0), tint, 0f,
-							  new Vector2(), 1f, SpriteEffects.None, DrawLayer.Background);
-		}
+    public void Interact()
+    {
+        if (_gameController.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast) return;
 
-		public Rectangle GetBounds() => new Rectangle(X, Y, 35, 30);
+        _gameController.Bruce.TimeTravel(this);
 
-		public bool IsSolid() => false;
+        _soundManager.PlaySound("Portrait TimeTravel", false, true);
+    }
 
-		public void Interact()
-		{
-			if (_gameController.TimePeriod == TimePeriod.FarPast && SendTime != TimePeriod.FarPast) return;
+    void ParseString(string saveString, string str)
+    {
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith(str, StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal))
+                _ = float.TryParse(line[2..], out _position.X);
 
-			var player = _gameController.Player;
-			player.State = Boy.BoyState.TimeTravel;
-			player.X = X;
-
-			_soundManager.PlaySound("Portrait Travel", false, true);
-		}
-	}
+            else if (line.StartsWith("y:", StringComparison.Ordinal))
+                _ = float.TryParse(line[2..], out _position.Y);
+        }
+    }
 }

@@ -2,118 +2,62 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Paranothing
+namespace Paranothing;
+
+sealed class Wall : IDrawable, ICollideable, IUpdatable
 {
-	sealed class Wall : IDrawable, ICollideable, IUpdatable, ISaveable
-	{
-		readonly GameController _gameController = GameController.GetInstance();
-		readonly SpriteSheet _sheet = SpriteSheetManager.GetInstance().GetSheet("wall");
-		readonly int _width,
-					 _height;
-		readonly bool _startIntact = true;
+    readonly bool _startIntact = true;
+    readonly GameController _gameController = GameController.Instance;
+    readonly int _width, _height;
+    readonly SpriteSheet _spriteSheet = SpriteSheetManager.Instance.GetSheet("wall");
+    readonly Vector2 _position;
 
-		Vector2 _position;
+    internal Wall(string saveString)
+    {
+        var lines = saveString.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        var lineNum = 0;
+        var line = string.Empty;
+        while (!line.StartsWith("EndWall", StringComparison.Ordinal) && lineNum < lines.Length)
+        {
+            line = lines[lineNum++];
+            if (line.StartsWith("x:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.X);
 
-		int X
-		{
-			get => (int) _position.X;
-			set => _position.X = value;
-		}
+            else if (line.StartsWith("y:", StringComparison.Ordinal)) _ = float.TryParse(line[2..], out _position.Y);
 
-		int Y
-		{
-			get => (int) _position.Y;
-			set => _position.Y = value;
-		}
+            else if (line.StartsWith("width:", StringComparison.Ordinal)) _ = int.TryParse(line[6..], out _width);
 
-		Rectangle Box => new Rectangle(X, Y, _width, _height);
+            else if (line.StartsWith("height:", StringComparison.Ordinal)) _ = int.TryParse(line[7..], out _height);
 
-		bool _intact;
+            else if (line.StartsWith("intact:", StringComparison.Ordinal))
+                _ = bool.TryParse(line[7..], out _startIntact);
+        }
+    }
 
-		internal Wall(string saveString)
-		{
-			var lines = saveString.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			var lineNum = 0;
-			X = 0;
-			Y = 0;
-			var line = "";
-			while (!line.StartsWith("EndWall", StringComparison.Ordinal) && lineNum < lines.Length)
-			{
-				line = lines[lineNum++];
-				if (line.StartsWith("x:", StringComparison.Ordinal))
-					try
-					{
-						X = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public Rectangle Bounds => new(X, Y, _width, _height);
 
-				if (line.StartsWith("y:", StringComparison.Ordinal))
-					try
-					{
-						Y = int.Parse(line.Substring(2));
-					}
-					catch (FormatException)
-					{
-					}
+    public bool IsSolid { get; private set; }
 
-				if (line.StartsWith("width:", StringComparison.Ordinal))
-					try
-					{
-						_width = int.Parse(line.Substring(6));
-					}
-					catch (FormatException)
-					{
-					}
+    int X => (int)_position.X;
 
-				if (line.StartsWith("height:", StringComparison.Ordinal))
-					try
-					{
-						_height = int.Parse(line.Substring(7));
-					}
-					catch (FormatException)
-					{
-					}
+    int Y => (int)_position.Y;
 
-				if (!line.StartsWith("intact:", StringComparison.Ordinal)) continue;
+    public void Draw(SpriteBatch spriteBatch, Color tint)
+    {
+        switch (_gameController.TimePeriod)
+        {
+            case TimePeriod.Present:
+            case TimePeriod.FarPast:
+                spriteBatch.Draw(_spriteSheet.Image, Bounds,
+                    !IsSolid ? _spriteSheet.GetSprite(1) : _spriteSheet.GetSprite(0), tint, 0f,
+                    new(), SpriteEffects.None, DrawLayer.Background - 0.01f);
+                break;
+            case TimePeriod.Past:
+                spriteBatch.Draw(_spriteSheet.Image, Bounds, _spriteSheet.GetSprite(0), tint, 0f, new(),
+                    SpriteEffects.None,
+                    DrawLayer.Background - 0.01f);
+                break;
+        }
+    }
 
-				try
-				{
-					_startIntact = bool.Parse(line.Substring(7));
-				}
-				catch (FormatException)
-				{
-				}
-			}
-		}
-
-		public void Reset()
-		{
-		}
-
-		public Rectangle GetBounds() => Box;
-
-		public bool IsSolid() => _intact;
-
-		public void Update(GameTime time) => _intact = _gameController.TimePeriod == TimePeriod.Past || _startIntact;
-
-		public void Draw(SpriteBatch renderer, Color tint)
-		{
-			switch (_gameController.TimePeriod)
-			{
-				case TimePeriod.Present:
-				case TimePeriod.FarPast:
-					renderer.Draw(_sheet.Image, Box, !_intact ? _sheet.GetSprite(1) : _sheet.GetSprite(0), tint, 0f,
-								  new Vector2(), SpriteEffects.None, DrawLayer.Background - 0.01f);
-					break;
-				case TimePeriod.Past:
-					renderer.Draw(_sheet.Image, Box, _sheet.GetSprite(0), tint, 0f, new Vector2(), SpriteEffects.None,
-								  DrawLayer.Background - 0.01f);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-	}
+    public void Update(GameTime time) => IsSolid = _gameController.TimePeriod == TimePeriod.Past || _startIntact;
 }
